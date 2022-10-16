@@ -1,0 +1,33 @@
+{
+  "hfcName": "awa-btn",
+  "name": "awesome-hfc",
+  "version": "1.2.19",
+  "description": "awesome button",
+  "homepage": "",
+  "type": "module",
+  "scripts": {
+    "start": "hfcpack",
+    "build": "hfcpack build",
+    "publish-hfc": "hfcpack publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "a",
+    "b",
+    "button"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vue": "3.2.40"
+  },
+  "devDependencies": {
+    "hfcpack": "../../"
+  },
+  "hfc": {
+    "name": "awa-btn"
+  }
+}
