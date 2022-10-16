@@ -1,0 +1,40 @@
+{
+  "templates": [
+    {
+      "title": "Vanilla",
+      "folder": "vanilla"
+    },
+    {
+      "title": "Vanilla - TypeScript",
+      "folder": "vanilla-ts"
+    },
+    {
+      "title": "React",
+      "folder": "react"
+    },
+    {
+      "title": "React - TypeScript",
+      "folder": "react-ts"
+    },
+    {
+      "title": "Preact",
+      "folder": "preact"
+    },
+    {
+      "title": "Preact - TypeScript",
+      "folder": "preact-ts"
+    },
+    {
+      "title": "Vue",
+      "folder": "vue"
+    },
+    {
+      "title": "Vue - TypeScript",
+      "folder": "vue-ts"
+    },
+    {
+      "title": "Svelte",
+      "folder": "svelte"
+    }
+  ]
+}

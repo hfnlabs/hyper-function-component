@@ -1,0 +1,29 @@
+{
+  "hfc": {
+    "name": ""
+  },
+  "name": "awesome-hfc",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "",
+  "homepage": "",
+  "repository": "",
+  "keywords": [],
+  "type": "module",
+  "scripts": {
+    "start": "hfcpack",
+    "build": "hfcpack build",
+    "publish-hfc": "hfcpack publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "react": ">=16.10.2",
+    "react-dom": ">=16.10.2",
+    "react-to-hfc": "^1.2.7"
+  },
+  "devDependencies": {
+    "@types/hyper-function-component": "^2.1.0",
+    "@vitejs/plugin-react": "^2.1.0",
+    "hfcpack": "^1.0.11"
+  }
+}
