@@ -21,11 +21,7 @@
           v-for="(item, index) in attrs"
           class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
         >
-          <td
-            class="py-2 pl-6 font-semibold font-mono break-all"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(attrs, item, index)"
-          >
+          <td class="py-2 pl-6 font-semibold font-mono break-all">
             <span class="text-gray-200">
               {{ "·".repeat((item.level || 0) * 2) }}
             </span>
@@ -62,11 +58,7 @@
           v-for="(item, index) in events"
           class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
         >
-          <td
-            class="py-2 pl-6 font-semibold font-mono"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(events, item, index)"
-          >
+          <td class="py-2 pl-6 font-semibold font-mono">
             <span class="text-gray-200">
               {{ "·".repeat((item.level || 0) * 2) }}
             </span>
@@ -104,11 +96,7 @@
           v-for="(item, index) in slots"
           class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
         >
-          <td
-            class="py-2 pl-6 font-semibold font-mono"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(slots, item, index)"
-          >
+          <td class="py-2 pl-6 font-semibold font-mono">
             <span class="text-gray-200">
               {{ "·".repeat((item.level || 0) * 2) }}
             </span>
@@ -121,6 +109,56 @@
             @click="renderSubType(slots, item, index)"
           >
             {{ item.type }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="text-xl font-semibold py-2 pt-10">Methods</div>
+    <table
+      class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400"
+    >
+      <thead
+        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="py-3 pl-6 w-[20%]">Name</th>
+          <th scope="col" class="py-3 pl-6 w-[50%]">Description</th>
+          <th scope="col" class="py-3 pl-6 w-[30%]">Type</th>
+        </tr>
+      </thead>
+      <tbody
+        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+      >
+        <tr
+          v-for="(item, index) in methods"
+          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+        >
+          <td class="py-2 pl-6 font-semibold font-mono">
+            <span class="text-gray-200">
+              {{ "·".repeat((item.level || 0) * 2) }}
+            </span>
+            <span>{{ item.name }}</span>
+          </td>
+          <td class="py-2 pl-6">{{ item.desc }}</td>
+          <td
+            class="py-2 pl-6"
+            :style="{ cursor: item.isObject ? 'pointer' : '' }"
+          >
+            <div v-if="item.level === 0" class="flex">
+              <span
+                class="pr-4 mr-4 border-r-2"
+                @click="renderSubType(methods, item, index, 'args')"
+              >
+                Args
+              </span>
+              <span @click="renderSubType(methods, item, index, 'result')">
+                Result
+              </span>
+            </div>
+            <span v-else @click="renderSubType(methods, item, index)">
+              {{ item.type }}
+            </span>
           </td>
         </tr>
       </tbody>
@@ -141,11 +179,18 @@ type RowItem = Partial<{
   level: number;
   default: string;
   expanded: boolean;
+  parent?: RowItem;
+
+  // for method
+  isAsync?: boolean;
+  args?: any;
+  result?: any;
 }>;
 
 const attrs = ref<RowItem[]>([]);
 const events = ref<RowItem[]>([]);
 const slots = ref<RowItem[]>([]);
+const methods = ref<RowItem[]>([]);
 
 const propTypes = inject<any>("propTypes")!;
 watch(propTypes, () => {
@@ -192,19 +237,65 @@ async function parsePropTypes() {
       level: 0,
     };
   });
+
+  methods.value = Object.keys(TYPES.Methods).map((name) => {
+    const method = TYPES.Methods[name];
+    const isAsync = !!method.async;
+
+    let args = method.t.args;
+    const result = method.t.result;
+
+    return {
+      name,
+      desc: method.c || "",
+      t: "",
+      type: "",
+      isObject: true,
+      level: 0,
+
+      isAsync,
+      args,
+      result,
+    };
+  });
 }
 
-function renderSubType(arr: RowItem[], item: RowItem, index: number) {
+function renderSubType(
+  arr: RowItem[],
+  item: RowItem,
+  index: number,
+  fieldName?: "args" | "result"
+) {
   if (!item.isObject) return;
-  if (item.expanded) return;
 
+  const nextItem = arr[index + 1];
+  let expanded = nextItem && nextItem.level! > item.level!;
+
+  if (fieldName === "args") {
+    if (item.type !== "args") expanded = false;
+    item.type = "args";
+    item.t = item.args.t;
+  } else if (fieldName === "result") {
+    if (item.type !== "result") expanded = false;
+    item.type = "result";
+    item.t = item.result.t;
+  }
+
+  let count = 0;
+  let cur = index + 1;
+  while (arr[cur]) {
+    if (!arr[cur] || arr[cur].level! <= item.level!) break;
+    cur++;
+    count++;
+  }
+  arr.splice(index + 1, count);
+
+  if (expanded) return;
   let items: any[] = packTypes(item.t, item.level! + 1);
 
   if (items.length) {
     arr.splice(index + 1, 0, ...items);
   }
-
-  item.expanded = true;
 }
 
 function packTypes(obj: any, level: number) {
@@ -243,6 +334,7 @@ function packTypes(obj: any, level: number) {
     }
 
     item.desc = item.c || "";
+    item.default = item.d || "";
     item.level = level || 0;
     item.name = name;
     return item;
