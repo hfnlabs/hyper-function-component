@@ -6,6 +6,7 @@ const codes = {
   tab: "\t",
   colon: ":",
   comment: "#",
+  annotation: "@",
 };
 
 const bracketMatches = [
@@ -94,8 +95,9 @@ export function tokenizer(input: string) {
 
     if (bracketMatched) continue;
 
-    // comments
-    if (char === codes.comment) {
+    const isComment = char === codes.comment;
+    const isAnnotation = char === codes.annotation;
+    if (isComment || isAnnotation) {
       const commentColumn = column;
       const commentOffset = current;
       while (char !== codes.newline && char !== codes.carriage) {
@@ -105,7 +107,7 @@ export function tokenizer(input: string) {
       }
 
       tokens.push({
-        type: "comment",
+        type: isComment ? "comment" : "annotation",
         value: str.slice(1),
         offset: commentOffset,
         column: commentColumn,
@@ -181,14 +183,41 @@ export function tokensToPropTypes(tokens: ReturnType<typeof tokenizer>) {
     let comments: string[] = [];
     while (pos--) {
       const token = tokens[pos];
-      if (token && token.type === "comment") {
+      if (!token) break;
+      if (token.type === "annotation") continue;
+      if (token.type === "comment") {
         comments.unshift(token.value);
-      } else {
-        break;
+        continue;
       }
+      break;
     }
 
     return comments.length ? comments.join("\n") : undefined;
+  }
+
+  function parseAnnotation(pos: number) {
+    const meta: {
+      // default
+      d?: string;
+      async?: boolean;
+    } = {};
+
+    while (pos--) {
+      const token = tokens[pos];
+
+      if (!token) break;
+
+      if (token.type === "comment") continue;
+      if (token.type === "annotation") {
+        const chunks = token.value.split(" ");
+        if (chunks[0] === "default") meta.d = chunks.slice(1).join(" ");
+        if (chunks[0] === "async") meta.async = true;
+        continue;
+      }
+      break;
+    }
+
+    return meta;
   }
 
   let current = 0;
@@ -202,8 +231,9 @@ export function tokensToPropTypes(tokens: ReturnType<typeof tokenizer>) {
         // field block
         const fieldNameToken = tokens[current - 2];
 
-        const c = getComment(current - 2);
-        const fieldItem = { t: {}, c };
+        const meta = parseAnnotation(current - 2);
+        const comment = getComment(current - 2);
+        const fieldItem = { t: {}, c: comment, ...meta };
         const parent = stack[stack.length - 1];
         parent.t[fieldNameToken.value] = fieldItem;
         stack.push(fieldItem);
@@ -244,12 +274,14 @@ export function tokensToPropTypes(tokens: ReturnType<typeof tokenizer>) {
       const parent = stack[stack.length - 1];
 
       const a = isArray(current + 2);
-      const c = getComment(current - 1);
+      const comment = getComment(current - 1);
+      const meta = parseAnnotation(current - 1);
 
       parent.t[fieldNameToken.value] = {
         t: stringToBaseType[typeToken.value] || typeToken.value,
         a,
-        c,
+        c: comment,
+        ...meta,
       };
 
       current++;
@@ -263,13 +295,18 @@ export function tokensToPropTypes(tokens: ReturnType<typeof tokenizer>) {
 }
 
 export function parse(content: string) {
-  return tokensToPropTypes(tokenizer(content));
+  const tokens = tokenizer(content);
+  return tokensToPropTypes(tokens);
 }
 
 const schema = `
 type Attrs {
+  #hihi
+  @default terry
   name: String
+  # aage
   age: Int
+  @h
   height: Float
 }
 
@@ -277,6 +314,7 @@ type Events {
   # heheasljfsef
   # ashefsef
   # asefse
+  @default dd ss
   d: Any
   e: String
 }
@@ -288,6 +326,7 @@ type Slots {
     a: {
       r: {
         e: {
+          @s
           a: Stt
           # basefss
           # haihih
@@ -299,6 +338,19 @@ type Slots {
     }
   }[]
 }
+type Methods {
+  @async
+  open: {
+    args: {
+      pos: String
+    }
+    result: {
+      ok: Boolean
+    }
+  }
+}
 `;
 
-// console.log(JSON.stringify(tokensToPropTypes(tokenizer(schema)), null, 2));
+// const tokens = tokenizer(schema);
+
+// console.log(JSON.stringify(tokensToPropTypes(tokens), null, 2));
