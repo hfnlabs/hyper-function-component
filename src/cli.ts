@@ -122,7 +122,7 @@ function verifyHfcName(input: string) {
   }
 
   if (!input.includes("-")) {
-    return "name must contain hyphen [-] \nlike awesome-button " + ref;
+    return "name must contain a '-' \nlike awesome-button " + ref;
   }
 
   if (/[^a-z]/.test(input[0])) {

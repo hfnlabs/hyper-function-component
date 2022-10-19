@@ -14,10 +14,14 @@ export class PropsBuilder extends EventEmitter {
     Attrs?: Record<string, any>;
     Events?: Record<string, any>;
     Slots?: Record<string, any>;
+    Methods?: Record<
+      string,
+      { async: boolean; args: Record<string, any>; result: Record<string, any> }
+    >;
     [key: string]: any;
   } = {};
 
-  public propNames: [string[], string[], string[]] = [[], [], []];
+  public propNames: [string[], string[], string[], string[]] = [[], [], [], []];
 
   constructor(private config: ResolvedConfig) {
     super();
@@ -51,6 +55,7 @@ export class PropsBuilder extends EventEmitter {
     res.Attrs = res.Attrs || {};
     res.Events = res.Events || {};
     res.Slots = res.Slots || {};
+    res.Methods = res.Methods || {};
 
     this.propTypes = res;
 
@@ -60,6 +65,7 @@ export class PropsBuilder extends EventEmitter {
       Object.keys(res.Attrs),
       Object.keys(res.Events),
       Object.keys(res.Slots),
+      Object.keys(res.Methods),
     ];
 
     process.env.HFC_PROP_NAMES = JSON.stringify(this.propNames);
