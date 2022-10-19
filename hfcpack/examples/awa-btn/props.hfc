@@ -8,6 +8,7 @@ type Attrs {
     a: String
     b: Int
   }
+  @default 1.80
   height: Float
 }
 
@@ -34,6 +35,22 @@ type Slots {
       }
     }
   }[]
+  ee: {
+    a: String
+  }
+}
+
+type Methods {
+  # oopop
+  @async
+  open: {
+    args: {
+      delay: Int
+    }
+    result: {
+      ok: Boolean
+    }
+  }
 }
 
 type User {
