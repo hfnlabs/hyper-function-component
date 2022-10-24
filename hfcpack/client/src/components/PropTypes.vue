@@ -178,8 +178,6 @@ type RowItem = Partial<{
   isObject: boolean;
   level: number;
   default: string;
-  expanded: boolean;
-  parent?: RowItem;
 
   // for method
   isAsync?: boolean;
@@ -293,9 +291,8 @@ function renderSubType(
   if (expanded) return;
   let items: any[] = packTypes(item.t, item.level! + 1);
 
-  if (items.length) {
-    arr.splice(index + 1, 0, ...items);
-  }
+  if (!items.length) return;
+  arr.splice(index + 1, 0, ...items);
 }
 
 function packTypes(obj: any, level: number) {

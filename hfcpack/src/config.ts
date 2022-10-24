@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import fs from "fs-extra";
 import path from "path";
+import { pathToFileURL } from "url";
 import { UserConfig, BuildOptions } from "vite";
 
 export interface ConfigEnv {
@@ -78,7 +79,7 @@ export async function resolveConfig(
 
   let config: HfcConfig;
   let { default: userConfig } = await import(
-    path.resolve(context, "hfcpack.config.js")
+    pathToFileURL(path.resolve(context, "hfcpack.config.js")).toString()
   );
 
   config =
