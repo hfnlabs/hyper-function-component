@@ -46,6 +46,21 @@ export class ManifestBuilder extends EventEmitter {
       keywords = process.env.HFC_KEYWORDS.split(",");
     }
 
+    if (!description) {
+      console.log("description is required in package.json");
+      process.exit(-1);
+    }
+
+    if (description.length > 256) {
+      console.log("description too lang, max 256 char");
+      process.exit(-1);
+    }
+
+    if (keywords.join("").length > 256) {
+      console.log("keywords too lang, max total 256 char");
+      process.exit(-1);
+    }
+
     const manifest: Manifest = {
       name: this.config.hfcName,
       version: this.config.version,

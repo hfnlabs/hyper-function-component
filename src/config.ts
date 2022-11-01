@@ -23,7 +23,9 @@ export type HfcConfig = Pick<
 export type UserConfigFn = (env: ConfigEnv) => UserConfig | Promise<UserConfig>;
 export type UserConfigExport = UserConfig | Promise<UserConfig> | UserConfigFn;
 
-export function defineConfig(config: UserConfigExport): UserConfigExport {
+export function defineHfcPackConfig(
+  config: UserConfigExport
+): UserConfigExport {
   return config;
 }
 

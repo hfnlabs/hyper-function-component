@@ -21,8 +21,8 @@ export async function publish({ token }: { token: string }) {
   form.append("manifest", JSON.stringify(manifest));
 
   const docMd = readFileSync(join(docPath, "index.md"), "utf8");
-  if (Buffer.byteLength(docMd) > 1024 * 256) {
-    console.error("doc too large, max 256 kb");
+  if (Buffer.byteLength(docMd) > 1024 * 1024 * 3) {
+    console.error("doc too large, max 3mb");
     process.exit(-1);
   }
 
@@ -60,7 +60,7 @@ export async function publish({ token }: { token: string }) {
 
   const publishUrl =
     process.env.NODE_ENV === "development"
-      ? "http://localhost:3000/publish"
+      ? "http://localhost:3032/publish"
       : "https://api.hfc.hyper.fun/publish";
 
   try {
