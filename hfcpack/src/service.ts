@@ -7,8 +7,14 @@ import { PropsBuilder } from "./build-hfc-props.js";
 import { ManifestBuilder } from "./build-manifest.js";
 
 import { DevServer } from "./dev-server.js";
-import { resolveConfig, ResolvedConfig } from "./config.js";
+import { resolveConfig, ResolvedConfig, UserConfigExport } from "./config.js";
 import { CssVarBuilder } from "./build-css-variable.js";
+
+declare global {
+  function defineHfcPackConfig(config: UserConfigExport): UserConfigExport;
+}
+
+globalThis.defineHfcPackConfig = defineHfcPackConfig;
 
 export class Service extends EventEmitter {
   config!: ResolvedConfig;
