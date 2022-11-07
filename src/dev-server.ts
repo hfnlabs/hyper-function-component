@@ -50,18 +50,6 @@ export class DevServer {
       });
     });
 
-    this.middlewares.use("/api/meta", async (req, res) => {
-      sendJson(res, {
-        name: this.config.hfcName,
-        desc: this.config.description,
-        keywords: this.config.keywords,
-        version: this.config.version,
-        license: this.config.license,
-        deps: this.config.dependencies,
-        banner: this.config.bannerPath,
-      });
-    });
-
     this.middlewares.use("/api/size", async (req, res) => {
       const { sizeJs, sizeCss } = await bundleSize(this.config.pkgOutputPath);
 

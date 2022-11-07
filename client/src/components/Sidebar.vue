@@ -103,9 +103,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { inject, computed, ref, onMounted } from "vue";
+import { inject, computed, ref, onMounted, Ref } from "vue";
 
-const manifest = inject<any>("manifest");
+const manifest = inject<Ref<HfcManifest>>("manifest")!;
 const deps = computed(() => {
   const deps = Object.keys(manifest.value.deps || {});
   return deps.map((name: any) => ({

@@ -3,7 +3,6 @@ export function listenBuildEvents(
 ) {
   let msgId = 0;
   let retryTimes = 0;
-
   function fetchEvent() {
     fetch("/api/events" + (msgId ? "?id=" + msgId : ""))
       .then((res) => res.json())

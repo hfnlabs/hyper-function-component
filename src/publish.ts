@@ -5,7 +5,6 @@ import colors from "picocolors";
 import fetch, { FormData, fileFromSync } from "node-fetch";
 
 import fs from "fs-extra";
-import { Manifest } from "./build-manifest";
 
 export async function publish({ token }: { token: string }) {
   const context = process.env.HFC_CLI_CONTEXT || process.cwd();
@@ -17,12 +16,12 @@ export async function publish({ token }: { token: string }) {
 
   const docPath = join(outputPath, "doc");
 
-  const manifest: Manifest = fs.readJsonSync(join(docPath, "manifest.json"));
+  const manifest: HfcManifest = fs.readJsonSync(join(docPath, "manifest.json"));
   form.append("manifest", JSON.stringify(manifest));
 
   const docMd = readFileSync(join(docPath, "index.md"), "utf8");
-  if (Buffer.byteLength(docMd) > 1024 * 1024 * 3) {
-    console.error("doc too large, max 3mb");
+  if (Buffer.byteLength(docMd) > 1024 * 1024 * 2) {
+    console.error("doc too large, max 2mb");
     process.exit(-1);
   }
 

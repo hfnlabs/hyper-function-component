@@ -94,11 +94,11 @@ export class HfmBuilder extends EventEmitter {
 
   async buildSharedNpmPkg() {
     await Promise.all(
-      Object.keys(this.config.dependencies).map(async (name) => {
+      Object.keys(this.config.deps).map(async (name) => {
         const sharedPkg = this.config.sharedNpmImportMap[name];
         if (!sharedPkg) return;
 
-        const dep = this.config.dependencies[name];
+        const dep = this.config.deps[name];
         await Promise.all(
           sharedPkg.imports.map(async (importPath) => {
             this.externals.push(importPath);

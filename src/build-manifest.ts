@@ -4,19 +4,6 @@ import chokidar from "chokidar";
 import fs from "fs-extra";
 import { ResolvedConfig } from "./config.js";
 
-export interface Manifest {
-  name: string;
-  version: string;
-  banner: string;
-  homepage: string;
-  description: string;
-  keywords: string[];
-  license: string;
-  repository: string;
-  dependencies: ResolvedConfig["dependencies"];
-  sharedNpmImportMap: ResolvedConfig["sharedNpmImportMap"];
-}
-
 const { existsSync, writeFile } = fs;
 export class ManifestBuilder extends EventEmitter {
   pkgJsonFilePath: string;
@@ -61,7 +48,7 @@ export class ManifestBuilder extends EventEmitter {
       process.exit(-1);
     }
 
-    const manifest: Manifest = {
+    const manifest: HfcManifest = {
       name: this.config.hfcName,
       version: this.config.version,
       banner: this.config.bannerPath,
@@ -70,7 +57,7 @@ export class ManifestBuilder extends EventEmitter {
       keywords,
       license,
       repository,
-      dependencies: this.config.dependencies,
+      deps: this.config.deps,
       sharedNpmImportMap: this.config.sharedNpmImportMap,
     };
 

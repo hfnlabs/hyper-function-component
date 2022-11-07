@@ -63,6 +63,10 @@ export class DocBuilder extends EventEmitter {
   }
   async build() {
     const content = await fs.readFile(this.entry, "utf-8");
+    if (Buffer.byteLength(content) > 1024 * 1024 * 2) {
+      console.error("doc too large, max 2mb");
+      process.exit(-1);
+    }
 
     await this.parse(content);
 

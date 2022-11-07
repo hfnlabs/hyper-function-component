@@ -6,16 +6,16 @@
 import { provide, ref } from "vue";
 import { listenBuildEvents } from "./build-event-listener";
 
-const manifest = ref<any>({});
+const manifest = ref({});
 provide("manifest", manifest);
 
 const docHtml = ref({ ts: 0, text: "" });
 provide("docHtml", docHtml);
 
-const propTypes = ref<any>({});
+const propTypes = ref({});
 provide("propTypes", propTypes);
 
-const cssVars = ref<any>([]);
+const cssVars = ref([]);
 provide("cssVars", cssVars);
 
 const hfcRebuildInfo = ref({ ts: 0 });

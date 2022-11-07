@@ -2,12 +2,13 @@
   <div class="prose prose-slate max-w-none" ref="docContainer"></div>
 </template>
 <script setup lang="ts">
-import { inject, ref, watch } from "vue";
+import { inject, Ref, ref, watch } from "vue";
+// @ts-ignore
 import { iframeResize } from "iframe-resizer";
 import { debounce } from "../utils";
 
-const manifest = inject<any>("manifest")!;
-const docHtml = inject<any>("docHtml")!;
+const manifest = inject<Ref<HfcManifest>>("manifest")!;
+const docHtml = inject<Ref<{ text: string }>>("docHtml")!;
 const hfcRebuildInfo = inject<any>("hfcRebuildInfo");
 const docContainer = ref<HTMLDivElement | null>(null);
 
