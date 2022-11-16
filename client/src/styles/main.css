@@ -1,6 +1,7 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import "./prism.css";
 
 @font-face {
   font-family: "Inter";
@@ -92,6 +93,24 @@
 }
 .sk-u {
   text-decoration: underline;
+}
+
+.milkdown {
+  box-shadow: none !important;
+}
+
+.milkdown .editor {
+  padding: 0 !important;
+}
+
+.milkdown .icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.milkdown .icon svg {
+  fill: currentColor;
 }
 
 .no-img-bg {

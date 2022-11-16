@@ -5,7 +5,7 @@
 
 type HyperFunctionComponent = ((
   container: Element,
-  props: HfcProps
+  initProps: HfcProps
 ) => {
   methods: HfcMethods;
   changed: (props: HfcProps) => void;
@@ -23,14 +23,15 @@ type HyperFunctionComponent = ((
 
 type HfcProps = {
   attrs: { [k: string]: any };
-  events: { [k: string]: (args?: { [k: string]: any }) => any };
+  events: { [k: string]: (args?: { [k: string]: any }) => Awaitable<any> };
   slots: {
     [k: string]: (
       container: Element,
       args?: { key?: string; [k: string]: any }
     ) => void;
   };
-  others: { [k: string]: any };
+  // all props
+  _: { [k: string]: any };
 };
 
 type HfcMethods = {

@@ -32,6 +32,7 @@ export class Service extends EventEmitter {
     this.config = await resolveConfig(this.context, this.command);
 
     const devServer = new DevServer(this.config);
+    await devServer.run();
 
     let docBuildDone = false;
     let propsBuildDone = false;
