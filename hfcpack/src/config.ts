@@ -51,7 +51,7 @@ export type ResolvedConfig = HfcConfig & {
   pkgOutputPath: string;
   hfmOutputPath: string;
   docOutputPath: string;
-  dependencies: Record<string, { v: string; rv: string }>;
+  deps: Record<string, { v: string; rv: string }>;
   devDependencies: Record<string, string>;
   sharedNpmImportMap: Record<string, { imports: string[] }>;
 };
@@ -126,7 +126,7 @@ export async function resolveConfig(
     const parts = source.split("/");
     const npmName = firstChar === "@" ? parts[0] + "/" + parts[1] : parts[0];
 
-    if (dependencies[npmName]) return true;
+    if (deps[npmName]) return true;
 
     return false;
   };
@@ -137,7 +137,7 @@ export async function resolveConfig(
   const description = packageJson.description;
   const devDependencies = packageJson.devDependencies || {};
 
-  const dependencies: ResolvedConfig["dependencies"] = {};
+  const deps: ResolvedConfig["deps"] = {};
   await Promise.all(
     Object.entries<string>(packageJson.dependencies || {}).map(
       async ([name, requiredVersion]) => {
@@ -149,7 +149,7 @@ export async function resolveConfig(
         );
 
         const pkgJson = await fs.readJson(pkgJsonPath);
-        dependencies[name] = { rv: requiredVersion, v: pkgJson.version };
+        deps[name] = { rv: requiredVersion, v: pkgJson.version };
       }
     )
   );
@@ -164,7 +164,7 @@ export async function resolveConfig(
     let npmName = arr[0];
     if (npmName[0] === "@") npmName += "/" + arr[1];
 
-    if (!dependencies[npmName]) continue;
+    if (!deps[npmName]) continue;
     // special case for react-dom, which must bundle with react
     if (npmName === "react-dom") continue;
 
@@ -208,6 +208,7 @@ export async function resolveConfig(
     keywords,
     description,
     rollupOptions,
+    deps,
     name: packageJson.name,
     port: Number(process.env.PORT) || Number(config.port) || 7000,
     hfcName: process.env.HFC_NAME || packageJson.hfc.name,
@@ -219,7 +220,6 @@ export async function resolveConfig(
     pkgOutputPath,
     hfmOutputPath,
     docOutputPath,
-    dependencies,
     devDependencies,
     cssVars: [],
     sharedNpmImportMap,

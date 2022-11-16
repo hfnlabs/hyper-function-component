@@ -5,6 +5,7 @@ import fs from "fs-extra";
 import connect from "connect";
 import colors from "picocolors";
 import prettyBytes from "pretty-bytes";
+import { createServer as createViteServer } from "vite";
 
 import kvCache from "./kv-cache.js";
 import bundleSize from "./bundle-size.js";
@@ -23,6 +24,9 @@ export class DevServer {
   eventResponses: ServerResponse[] = [];
   constructor(private config: ResolvedConfig) {
     this.middlewares = connect();
+  }
+
+  async run() {
     this.middlewares.use(cors());
 
     this.middlewares.use("/api/events", (req, res) => {
@@ -47,18 +51,6 @@ export class DevServer {
         if (!this.eventResponses.length) return;
         const idx = this.eventResponses.indexOf(res);
         if (idx >= 0) this.eventResponses.splice(idx, 1);
-      });
-    });
-
-    this.middlewares.use("/api/meta", async (req, res) => {
-      sendJson(res, {
-        name: this.config.hfcName,
-        desc: this.config.description,
-        keywords: this.config.keywords,
-        version: this.config.version,
-        license: this.config.license,
-        deps: this.config.dependencies,
-        banner: this.config.bannerPath,
       });
     });
 
@@ -99,18 +91,39 @@ export class DevServer {
       })
     );
 
-    const clientPath = path.join(__dirname, "client");
-    this.middlewares.use(sirv(clientPath, { dev: true, etag: true }));
-
-    const previewHtml = fs.readFileSync(
-      path.join(clientPath, "preview.html"),
-      "utf8"
-    );
-
+    let previewJsPath = "/preview.js";
     this.middlewares.use("/preview/", (req, res) => {
       res.setHeader("Content-Type", "text/html");
-      res.end(previewHtml);
+      res.end(`
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title></title>
+          </head>
+          <body>
+            <div id="app"></div>
+            <script type="module" src="${previewJsPath}"></script>
+          </body>
+        </html>
+      `);
     });
+
+    const clientDist = path.resolve(__dirname, "..", "dist", "client");
+    if (fs.existsSync(clientDist)) {
+      this.middlewares.use(sirv(clientDist, { dev: true, etag: true }));
+    } else {
+      const clientSrc = path.resolve(__dirname, "..", "client");
+
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        root: clientSrc,
+      });
+
+      this.middlewares.use(vite.middlewares);
+      previewJsPath = "/src/preview.ts";
+    }
   }
   sendMessage(msg: any) {
     const id = this.eventMessageId++;

@@ -7,7 +7,12 @@ import { PropsBuilder } from "./build-hfc-props.js";
 import { ManifestBuilder } from "./build-manifest.js";
 
 import { DevServer } from "./dev-server.js";
-import { resolveConfig, ResolvedConfig, UserConfigExport } from "./config.js";
+import {
+  resolveConfig,
+  ResolvedConfig,
+  UserConfigExport,
+  defineHfcPackConfig,
+} from "./config.js";
 import { CssVarBuilder } from "./build-css-variable.js";
 
 declare global {
@@ -27,6 +32,7 @@ export class Service extends EventEmitter {
     this.config = await resolveConfig(this.context, this.command);
 
     const devServer = new DevServer(this.config);
+    await devServer.run();
 
     let docBuildDone = false;
     let propsBuildDone = false;

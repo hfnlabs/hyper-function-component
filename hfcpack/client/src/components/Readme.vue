@@ -1,18 +1,25 @@
 <template>
+  <div id="readme"></div>
   <div class="prose prose-slate max-w-none" ref="docContainer"></div>
 </template>
 <script setup lang="ts">
-import { inject, ref, watch } from "vue";
+import { inject, onMounted, Ref, ref, watch } from "vue";
+// @ts-ignore
 import { iframeResize } from "iframe-resizer";
 import { debounce } from "../utils";
+import { showReadme } from "../milkdown";
 
-const manifest = inject<any>("manifest")!;
-const docHtml = inject<any>("docHtml")!;
+const manifest = inject<Ref<HfcManifest>>("manifest")!;
+const docHtml = inject<Ref<{ text: string }>>("docHtml")!;
 const hfcRebuildInfo = inject<any>("hfcRebuildInfo");
 const docContainer = ref<HTMLDivElement | null>(null);
 
 watch(() => docHtml.value, renderHfcDoc);
 watch(() => hfcRebuildInfo.value, reloadHfcPreview);
+
+onMounted(() => {
+  showReadme("#readme");
+});
 
 function showEditor(
   container: HTMLDivElement,
@@ -35,7 +42,7 @@ function showEditor(
   );
 
   editor.className = "rounded mt-4";
-  editor.src = "https://code.hyper.fun/embed-editor";
+  editor.src = "https://view.hyper.fun/embed-editor";
   container.appendChild(editor);
 
   iframeResize(
