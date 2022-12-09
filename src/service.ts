@@ -1,147 +1,92 @@
-import colors from "picocolors";
-import EventEmitter from "events";
-import { DocBuilder } from "./build-doc.js";
-import { EsmBuilder } from "./build-esm.js";
-import { HfmBuilder } from "./build-hfm.js";
-import { PropsBuilder } from "./build-hfc-props.js";
-import { ManifestBuilder } from "./build-manifest.js";
+import EventEmitter from 'events'
+import colors from 'picocolors'
+import { EsmBuilder } from './esm-builder.js'
+import { HfmBuilder } from './hfm-builder.js'
+import { PropsBuilder } from './hfc-props-builder.js'
+import { ManifestBuilder } from './manifest-builder.js'
 
-import { DevServer } from "./dev-server.js";
-import {
-  resolveConfig,
+import { DevServer } from './dev-server.js'
+import type {
   ResolvedConfig,
   UserConfigExport,
+} from './config.js'
+import {
   defineHfcPackConfig,
-} from "./config.js";
-import { CssVarBuilder } from "./build-css-variable.js";
+  resolveConfig,
+} from './config.js'
+import { CssVarBuilder } from './css-variable-builder.js'
 
 declare global {
-  function defineHfcPackConfig(config: UserConfigExport): UserConfigExport;
+  function defineHfcPackConfig(config: UserConfigExport): UserConfigExport
 }
 
-globalThis.defineHfcPackConfig = defineHfcPackConfig;
+globalThis.defineHfcPackConfig = defineHfcPackConfig
 
 export class Service extends EventEmitter {
-  config!: ResolvedConfig;
+  config!: ResolvedConfig
+  devServer?: DevServer
 
-  constructor(public context: string, public command: "serve" | "build") {
-    super();
+  constructor(public context: string, public command: 'serve' | 'build') {
+    super()
   }
 
   async run() {
-    this.config = await resolveConfig(this.context, this.command);
+    this.config = await resolveConfig(this.context, this.command)
 
-    const devServer = new DevServer(this.config);
-    await devServer.run();
+    const propsBuilder = new PropsBuilder(this.config)
+    const cssVarBuilder = new CssVarBuilder(this.config)
+    const manifestBuilder = new ManifestBuilder(this.config)
 
-    let docBuildDone = false;
-    let propsBuildDone = false;
-    let cssVarsBuildDone = false;
-    let manifestBuildDone = false;
-    let pkgBuildDone = false;
+    await Promise.all([
+      propsBuilder.build(),
+      cssVarBuilder.build(),
+      manifestBuilder.build(),
+    ])
 
-    const isReady = () =>
-      docBuildDone &&
-      propsBuildDone &&
-      cssVarsBuildDone &&
-      manifestBuildDone &&
-      pkgBuildDone;
+    const hfmBuilder = new HfmBuilder(this.config)
+    await hfmBuilder.resolveConfig()
 
-    const runAfterReady = () => {
-      if (!isReady()) return;
+    const esmBuilder = new EsmBuilder(this.config)
+    await esmBuilder.build()
+    await new Promise((resolve) => {
+      esmBuilder.once('build-complete', resolve)
+    })
 
-      this.emit("ready");
-      if (this.command === "serve") {
-        devServer.listen();
-      }
-    };
+    await hfmBuilder.build()
 
-    const propsBuilder = new PropsBuilder(this.config);
-    propsBuilder.on("build-complete", () => {
-      if (!propsBuildDone) {
-        propsBuildDone = true;
-        runAfterReady();
-      }
+    console.log(colors.green('Build complete'))
+    this.emit('ready')
 
-      this.emit("hfc-props-build-complete");
+    if (this.command !== 'serve')
+      return
 
-      if (isReady() && this.command === "serve") {
-        esmBuilder.build();
-        devServer.sendMessage({ action: "update-hfc-props" });
-      }
-    });
+    propsBuilder.on('build-complete', () => {
+      esmBuilder.build()
+    })
 
-    const cssVarBuilder = new CssVarBuilder(this.config);
-    cssVarBuilder.on("build-complete", () => {
-      if (!cssVarsBuildDone) {
-        cssVarsBuildDone = true;
-        runAfterReady();
-      }
+    cssVarBuilder.on('build-complete', () => {
+      esmBuilder.build()
+    })
 
-      this.emit("css-var-build-complete");
+    manifestBuilder.on('build-complete', () => {
+      esmBuilder.build()
+    })
 
-      if (isReady() && this.command === "serve") {
-        esmBuilder.build();
-        devServer.sendMessage({ action: "update-hfc-cssvars" });
-      }
-    });
+    esmBuilder.on('build-complete', () => {
+      hfmBuilder.build()
+    })
 
-    const docBuilder = new DocBuilder(this.config);
-    docBuilder.on("build-complete", () => {
-      console.log("doc build complete");
+    hfmBuilder.on('build-complete', () => {
+      console.log(colors.green('Rebuild complete'))
+    })
 
-      if (!docBuildDone) {
-        docBuildDone = true;
-        runAfterReady();
-      }
-
-      this.emit("doc-build-complete");
-
-      if (isReady() && this.command === "serve") {
-        devServer.sendMessage({ action: "update-hfc-markdown" });
-      }
-    });
-
-    const manifestBuilder = new ManifestBuilder(this.config);
-    manifestBuilder.on("build-complete", () => {
-      if (!manifestBuildDone) {
-        manifestBuildDone = true;
-        runAfterReady();
-      }
-
-      this.emit("pkg-json-build-complete");
-
-      if (isReady() && this.command === "serve") {
-        devServer.sendMessage({ action: "update-hfc-pkg-json" });
-      }
-    });
-
-    const hfmBuilder = new HfmBuilder(this.config);
-    await hfmBuilder.resolveConfig();
-
-    let isFirstBuild = true;
-    hfmBuilder.on("build-complete", async () => {
-      console.log(colors.green("hfc build complete"));
-
-      if (isFirstBuild) {
-        isFirstBuild = false;
-
-        if (!pkgBuildDone) {
-          pkgBuildDone = true;
-          runAfterReady();
-        }
-
-        this.emit("pkg-build-complete");
-      }
-
-      if (isReady() && this.command === "serve") {
-        devServer.sendMessage({ action: "rebuild-complete" });
-      }
-    });
-
-    const esmBuilder = new EsmBuilder(this.config);
-    esmBuilder.on("build-complete", () => {
-      hfmBuilder.build();
-    });
+    this.devServer = new DevServer(this.config, {
+      hfmBuilder,
+      esmBuilder,
+      manifestBuilder,
+      propsBuilder,
+      cssVarBuilder,
+    })
+    await this.devServer.run()
   }
 }

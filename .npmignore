@@ -1,4 +1,3 @@
 *
 !dist/**/*
 !cli.js
-!shiki-theme.json

@@ -1,111 +1,271 @@
-<template>
-  <div id="readme"></div>
-  <div class="prose prose-slate max-w-none" ref="docContainer"></div>
-</template>
 <script setup lang="ts">
-import { inject, onMounted, Ref, ref, watch } from "vue";
-// @ts-ignore
-import { iframeResize } from "iframe-resizer";
-import { debounce } from "../utils";
-import { showReadme } from "../milkdown";
+import type { Editor } from '@milkdown/core'
+import { defaultValueCtx, editorViewCtx, rootCtx, serializerCtx } from '@milkdown/core'
+import { listenerCtx } from '@milkdown/plugin-listener'
+import { createApp, ref, watch } from 'vue'
+// @ts-expect-error no types from this pkg
+import { iframeResize } from 'iframe-resizer'
+import { useDebounceFn, useThrottleFn } from '@vueuse/core'
+import { replaceAll } from '@milkdown/utils'
+import { refractor } from 'refractor'
+import { toHtml } from 'hast-util-to-html'
+import { createMilkdownEditor } from '../milkdown'
+import type { HfzViewCode } from '../milkdown/hfz-view'
+import { useDocMd } from '@/composables/useDocMd'
+import { useManifest } from '@/composables/useManifest'
+import { useBuildEvent } from '@/composables/useBuildEvent'
+import { useSpliter } from '@/utils'
 
-const manifest = inject<Ref<HfcManifest>>("manifest")!;
-const docHtml = inject<Ref<{ text: string }>>("docHtml")!;
-const hfcRebuildInfo = inject<any>("hfcRebuildInfo");
-const docContainer = ref<HTMLDivElement | null>(null);
+import HfzPreviewActionBar from '@/components/HfzPreviewActionBar.vue'
 
-watch(() => docHtml.value, renderHfcDoc);
-watch(() => hfcRebuildInfo.value, reloadHfcPreview);
+const { manifest } = useManifest()
+const { docMd, updateDocMd } = useDocMd()
 
-onMounted(() => {
-  showReadme("#readme");
-});
+const codeMap: HfzViewCode = new Map()
+const sandboxMap: Map<string, HTMLIFrameElement> = new Map()
 
-function showEditor(
-  container: HTMLDivElement,
-  code: string,
-  onChange: Function,
-  onInit: Function
-) {
-  const editor = document.createElement("iframe");
-  editor.setAttribute(
-    "sandbox",
+const milkdownEditor = ref<Editor>()
+function saveMd() {
+  milkdownEditor.value!.action((ctx) => {
+    const editorView = ctx.get(editorViewCtx)
+    const serializer = ctx.get(serializerCtx)
+    const md = serializer(editorView.state.doc)
+    updateDocMd(md)
+  })
+}
+
+const docContainer = ref<HTMLDivElement | null>(null)
+watch(() => docMd.value, async () => {
+  if (milkdownEditor.value) {
+    milkdownEditor.value.action(replaceAll(docMd.value.content))
+    return
+  }
+
+  const editor = await createMilkdownEditor((ctx) => {
+    ctx.set(rootCtx, docContainer.value!)
+    ctx.set(
+      defaultValueCtx,
+      docMd.value.content,
+    )
+
+    ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
+      updateDocMd(markdown)
+    })
+  }, codeMap, renderHfzView)
+
+  milkdownEditor.value = editor
+})
+
+const { buildEvent } = useBuildEvent()
+watch(() => buildEvent.value, () => {
+  if (buildEvent.value.action === 'rebuild-complete')
+    reloadAllHfzView()
+})
+
+function reloadAllHfzView() {
+  sandboxMap.forEach((sandbox) => {
+    (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
+  })
+}
+
+function renderHfzView(id: string, container: HTMLDivElement) {
+  const { name, version } = manifest.value!
+
+  const code = codeMap.get(id)!
+  if (!code.value) {
+    code.value = `\
+<template hfz import:${name}="dev">
+  <${name}></${name}>
+</template>
+`
+  }
+
+  const sandboxContainer = document.createElement('div')
+  sandboxContainer.style.position = 'relative'
+  sandboxContainer.style.borderRadius = '4px'
+  sandboxContainer.style.boxShadow = '0 0 0 1.2px #ebecf0'
+
+  const sandbox = document.createElement('iframe')
+  sandbox.style.borderRadius = '4px'
+  sandboxMap.set(id, sandbox)
+
+  sandbox.setAttribute(
+    'sandbox',
     [
-      "allow-same-origin",
-      "allow-popups",
-      "allow-modals",
-      "allow-forms",
-      "allow-pointer-lock",
-      "allow-scripts",
-      "allow-top-navigation-by-user-activation",
-    ].join(" ")
-  );
+      'allow-same-origin',
+      'allow-popups',
+      'allow-modals',
+      'allow-forms',
+      'allow-pointer-lock',
+      'allow-scripts',
+      'allow-top-navigation-by-user-activation',
+    ].join(' '),
+  )
 
-  editor.className = "rounded mt-4";
-  editor.src = "https://view.hyper.fun/embed-editor";
-  container.appendChild(editor);
+  let sandboxHeight = code.minHeight || 60
+  sandbox.src = '/hfz-preview.html'
+  sandboxContainer.appendChild(sandbox)
+
+  const bottomSpliterElem = document.createElement('div')
+  sandboxContainer.appendChild(bottomSpliterElem)
+  useSpliter('bottom', bottomSpliterElem, useThrottleFn((offset: number) => {
+    const height = sandboxHeight + offset
+    sandbox.style.height = `${height}px`
+  }, 10))
+
+  let containerWidth = 0
+  const rightSpliterElem = document.createElement('div')
+  sandboxContainer.appendChild(rightSpliterElem)
+  useSpliter('right', rightSpliterElem, useThrottleFn((offset: number) => {
+    if (!containerWidth)
+      containerWidth = parseInt(getComputedStyle(sandboxContainer).width)
+
+    sandboxContainer.style.width = `${containerWidth + offset}px`
+  }, 10))
+
+  container.appendChild(sandboxContainer)
 
   iframeResize(
     {
       log: false,
       sizeHeight: false,
       checkOrigin: false,
-      heightCalculationMethod: "grow",
+      minHeight: sandboxHeight,
+      heightCalculationMethod: 'grow',
       onInit() {
-        (editor as any).iFrameResizer.sendMessage({
-          action: "init",
+        (sandbox as any).iFrameResizer.sendMessage({
+          action: 'render',
           data: {
-            code: code,
+            code: code.value,
+            name,
+            version,
           },
-        });
-        onInit();
+        })
       },
       onResized(res: any) {
-        if (res.height <= 16) return;
-        editor.style.height = res.height + "px";
+        if (res.height < 60)
+          return
+        sandboxHeight = parseInt(res.height)
+        sandbox.style.height = `${sandboxHeight}px`
       },
-      onMessage(res: any) {
-        if (res.message.action === "editorReady") {
-        }
+      onMessage: ({ message }: { message: { action: string; data: any } }) => {
 
-        if (res.message.action === "change") {
-          onChange(res.message.code);
-        }
       },
     },
-    editor
-  );
+    sandbox,
+  )
+
+  const actionContainer = document.createElement('div')
+  actionContainer.style.position = 'relative'
+  const actionBar = document.createElement('div')
+  actionBar.classList.add('action-bar')
+  actionContainer.appendChild(actionBar)
+  container.appendChild(actionContainer)
+
+  let actionBarMounted = false
+  container.onmouseenter = () => {
+    if (actionBarMounted)
+      return
+
+    actionBarMounted = true
+
+    createApp(HfzPreviewActionBar, {
+      onClickOpen() {
+        (sandbox as any).iFrameResizer.sendMessage({
+          action: 'openInNewTab',
+        })
+      },
+      onClickEdit() {
+        showMonacoEditor()
+      },
+      onClickReload() {
+        (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
+      },
+      onClickDelete() {
+        sandboxMap.delete(id)
+        sandbox.remove()
+        milkdownEditor.value!.action((ctx) => {
+          const editorView = ctx.get(editorViewCtx)
+
+          editorView.state.doc.forEach((node, offset) => {
+            if (node.type.name === 'hfz_view' && node.attrs.id === id) {
+              editorView.dispatch(
+                editorView.state.tr.delete(offset, offset + node.nodeSize),
+              )
+            }
+          })
+        })
+      },
+    }).mount(actionBar)
+  }
+
+  const codeContainer = document.createElement('div')
+  codeContainer.style.position = 'relative'
+  codeContainer.style.borderRadius = '4px'
+  codeContainer.style.overflow = 'hidden'
+
+  function showHighlightCode() {
+    const pre = document.createElement('pre')
+    pre.style.margin = '1em 0'
+    pre.style.maxHeight = '400px'
+
+    const codeHighlightBlock = document.createElement('code')
+    codeHighlightBlock.classList.add('language-hfz')
+    const tree = refractor.highlight(code.value, 'html')
+    codeHighlightBlock.innerHTML = toHtml(tree)
+
+    pre.appendChild(codeHighlightBlock)
+
+    setTimeout(() => {
+      renderCodeCollapse(pre)
+    }, 0)
+
+    codeContainer.innerHTML = ''
+    codeContainer.appendChild(pre)
+  }
+  showHighlightCode()
+
+  function showMonacoEditor() {
+    const editorFrame = document.createElement('iframe')
+    editorFrame.style.margin = '1em 0'
+    editorFrame.style.height = '400px'
+    editorFrame.style.borderRadius = '4px'
+
+    const frameId = Math.random().toString(36).substring(2)
+    editorFrame.src = `/hfz-preview-editor.html?id=${frameId}&code=${encodeURIComponent(code.value)}`
+
+    const onCodeChange = useDebounceFn(() => {
+      (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
+      saveMd()
+    }, 250)
+
+    window.addEventListener('message', (event) => {
+      if (event.data.from !== 'embedEditor' && event.data.id !== frameId)
+        return
+
+      if (event.data.action === 'changeCode') {
+        const code = codeMap.get(id)
+        code!.value = event.data.data
+        codeMap.set(id, code!)
+
+        onCodeChange()
+      }
+    })
+
+    codeContainer.innerHTML = ''
+    codeContainer.appendChild(editorFrame)
+  }
+
+  container.append(codeContainer)
 }
 
-function renderHfcDoc() {
-  document.title = manifest.value.name;
-  const elem = docContainer.value;
-  if (!elem) return;
+function renderCodeCollapse(elem: HTMLPreElement) {
+  const height = parseInt(getComputedStyle(elem).height)
+  if (height < 400)
+    return
 
-  elem.style.width = "auto";
-  // prevent page flashing when reloading
-  elem.style.minHeight = elem.clientHeight + "px";
-
-  elem.innerHTML = docHtml.value.text;
-  renderHfcPreview();
-  renderCodeCollapse();
-
-  setTimeout(() => {
-    elem.style.minHeight = "auto";
-  }, 500);
-}
-
-function renderCodeCollapse() {
-  const codeBlocks = document.querySelectorAll<HTMLPreElement>(".shiki");
-  codeBlocks.forEach((elem) => {
-    const isHfzBlock = elem.hasAttribute("data-hfz");
-    if (!isHfzBlock) return;
-
-    const height = getComputedStyle(elem).height;
-    if (height !== "200px") return;
-
-    const collapse = document.createElement("template");
-    collapse.innerHTML = `
+  const collapse = document.createElement('template')
+  collapse.innerHTML = `
       <div
         class="absolute bottom-0 left-0 right-0 flex flex-col"
       >
@@ -117,184 +277,154 @@ function renderCodeCollapse() {
         >
         </div>
       </div>
-    `;
+    `
 
-    const mask = collapse.content.getElementById("mask")!;
-    mask.removeAttribute("id");
+  const mask = collapse.content.getElementById('mask')!
+  mask.removeAttribute('id')
 
-    const openSvg = `<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z"/></svg></span>`;
-    const closeSvg = `<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m12 8l-6 6l1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>`;
-    const btn = collapse.content.getElementById("btn")!;
-    btn.removeAttribute("id");
-    btn.innerHTML = openSvg;
+  const openSvg = '<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z"/></svg></span>'
+  const closeSvg = '<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m12 8l-6 6l1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>'
+  const btn = collapse.content.getElementById('btn')!
+  btn.removeAttribute('id')
+  btn.innerHTML = openSvg
 
-    let isOpen = false;
-    btn.addEventListener("click", () => {
-      isOpen = !isOpen;
-      elem.style.maxHeight = isOpen ? "none" : "200px";
-      mask.style.display = isOpen ? "none" : "block";
-      btn.innerHTML = isOpen ? closeSvg : openSvg;
-    });
+  let isOpen = false
+  btn.addEventListener('click', () => {
+    isOpen = !isOpen
+    elem.style.maxHeight = isOpen ? 'none' : '400px'
+    mask.style.display = isOpen ? 'none' : 'block'
+    btn.innerHTML = isOpen ? closeSvg : openSvg
+  })
 
-    elem.appendChild(collapse.content);
-  });
-}
-
-let sandboxes: HTMLIFrameElement[] = [];
-function reloadHfcPreview() {
-  sandboxes.forEach((sandbox) => {
-    (sandbox as any).iFrameResizer.sendMessage({ action: "reload" });
-  });
-}
-
-function renderHfcPreview() {
-  if (sandboxes.length) {
-    sandboxes.forEach((sandbox) => {
-      sandbox.remove();
-    });
-    sandboxes = [];
-  }
-
-  const hfzSnippets = document.querySelectorAll<HTMLDivElement>("[data-hfz]");
-  hfzSnippets.forEach((snippet) => {
-    snippet.style.marginTop = "0";
-
-    const container = document.createElement("div");
-    snippet.before(container);
-
-    const id = snippet.dataset.hfzId;
-    let code = decodeURIComponent(snippet.dataset.hfz!);
-    snippet.setAttribute("data-hfz", "");
-    container.classList.add("hfz-preview");
-
-    const sandbox = document.createElement("iframe");
-    sandbox.style.boxShadow = "0 0 0 1.2px #ebecf0";
-    sandbox.style.borderRadius = "4px";
-    sandboxes.push(sandbox);
-    sandbox.setAttribute(
-      "sandbox",
-      [
-        "allow-same-origin",
-        "allow-popups",
-        "allow-modals",
-        "allow-forms",
-        "allow-pointer-lock",
-        "allow-scripts",
-        "allow-top-navigation-by-user-activation",
-      ].join(" ")
-    );
-
-    sandbox.src = "/preview/" + id;
-    container.appendChild(sandbox);
-
-    iframeResize(
-      {
-        log: false,
-        sizeHeight: false,
-        checkOrigin: false,
-        heightCalculationMethod: "grow",
-        onInit() {
-          (sandbox as any).iFrameResizer.sendMessage({
-            action: "render",
-            data: {
-              code: code,
-              name: manifest.value.name,
-              version: manifest.value.version,
-            },
-          });
-        },
-        onResized(res: any) {
-          if (res.height <= 16) return;
-          sandbox.style.height = res.height + "px";
-        },
-      },
-      sandbox
-    );
-
-    const actions = document.createElement("template");
-    actions.innerHTML = `
-      <div class="relative">
-        <div class="absolute flex gap-3 top-6 right-4 z-10">
-          <button class="text-gray-400 hover:text-gray-200 w-6" title="Open in new tab">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M0 0h24v24H0V0z" fill="none"/><path d="M18 19H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h5c.55 0 1-.45 1-1s-.45-1-1-1H5c-1.11 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-6c0-.55-.45-1-1-1s-1 .45-1 1v5c0 .55-.45 1-1 1zM14 4c0 .55.45 1 1 1h2.59l-9.13 9.13c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L19 6.41V9c0 .55.45 1 1 1s1-.45 1-1V4c0-.55-.45-1-1-1h-5c-.55 0-1 .45-1 1z"/>
-            </svg>
-          </button>
-          <button class="text-gray-400 hover:text-gray-200 w-6" title="Edit">
-            <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m18.988 2.012l3 3L19.701 7.3l-3-3zM8 16h3l7.287-7.287l-3-3L8 13z"/><path fill="currentColor" d="M19 19H8.158c-.026 0-.053.01-.079.01c-.033 0-.066-.009-.1-.01H5V5h6.847l2-2H5c-1.103 0-2 .896-2 2v14c0 1.104.897 2 2 2h14a2 2 0 0 0 2-2v-8.668l-2 2V19z"/></svg>
-          </button>
-          <button class="text-gray-400 hover:text-gray-200 w-6" title="Reload">
-            <svg fill="currentColor" viewBox="0 0 1024 1024"><path d="M768 707.669333V256H469.333333a42.666667 42.666667 0 1 1 0-85.333333h341.333334a42.666667 42.666667 0 0 1 42.666666 42.666666v494.336l55.168-55.168a42.666667 42.666667 0 0 1 60.330667 60.330667l-128 128a42.666667 42.666667 0 0 1-60.330667 0l-128-128a42.666667 42.666667 0 0 1 60.330667-60.330667L768 707.669333zM256 316.330667V768h298.666667a42.666667 42.666667 0 1 1 0 85.333333H213.333333a42.666667 42.666667 0 0 1-42.666666-42.666666V316.330667l-55.168 55.168a42.666667 42.666667 0 0 1-60.330667-60.330667l128-128a42.666667 42.666667 0 0 1 60.330667 0l128 128a42.666667 42.666667 0 0 1-60.330667 60.330667L256 316.330667z"></path></svg>
-          </button>
-        </div>
-      </div>
-    `;
-
-    const actionBtns = actions.content.querySelectorAll("button");
-
-    const openBtn = actionBtns[0];
-    openBtn.addEventListener("click", () => {
-      window.open("/preview/" + id, "_blank");
-    });
-
-    const editBtn = actionBtns[1];
-    let editorContainer: HTMLDivElement | null = null;
-    editBtn.addEventListener("click", () => {
-      if (editorContainer) {
-        container.removeChild(editorContainer);
-        snippet.style.display = "block";
-        editorContainer = null;
-        return;
-      }
-
-      editorContainer = document.createElement("div");
-      container.appendChild(editorContainer);
-      showEditor(
-        editorContainer,
-        code!,
-        debounce((newCode: string) => {
-          if (newCode === code) {
-            return;
-          }
-
-          code = newCode;
-          (sandbox as any).iFrameResizer.sendMessage({ action: "reload" });
-        }, 250),
-        () => {
-          snippet.style.display = "none";
-        }
-      );
-    });
-
-    const reloadBtn = actionBtns[2];
-    reloadBtn.addEventListener("click", () => {
-      (sandbox as any).iFrameResizer.sendMessage({ action: "reload" });
-    });
-
-    container.appendChild(actions.content);
-  });
+  elem.appendChild(collapse.content)
 }
 </script>
+
+<template>
+  <div ref="docContainer" class="prose prose-slate lg:prose-lg" />
+</template>
+
 <style>
-.hfz-preview {
-  position: relative;
-  margin-bottom: 12px;
-}
-.hfz-preview iframe {
-  width: 100%;
-  min-width: 100%;
-  height: 0;
-  border: none;
-  transition: height 300ms ease;
+.prose li p {
+  margin: 0;
 }
 
-.shiki {
-  position: relative;
-  overflow: hidden;
+.prose .task-list-item {
+  display: flex;
 }
-.shiki[data-hfz] {
+
+.prose .task-list-item>input[type="checkbox"] {
+  appearance: none;
+  align-self: center;
+  width: 1.15em;
+  height: 1.15em;
+  border: 0.15em solid #334155;
+  border-radius: 0.15em;
+  flex-shrink: 0;
+  display: grid;
+  place-content: center;
+  margin: 0;
+  margin-right: 1em;
+}
+
+.prose .task-list-item>input[type="checkbox"]::before {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transform-origin: bottom left;
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em #334155;
+  /* Windows High Contrast Mode */
+  background-color: CanvasText;
+}
+
+.prose .task-list-item>input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+.prose .task-list-item>input[type="checkbox"]:focus {
+  outline: max(2px, 0.15em) solid #334155;
+  outline-offset: max(2px, 0.15em);
+}
+
+.prose .task-list-item>input[type="checkbox"]:disabled {
+  color: #959495;
+  cursor: not-allowed;
+}
+
+.prose .code-fence .code-fence-select {
+  position: absolute !important;
+  top: 1em;
+  right: 18px;
+  appearance: none;
+  margin: 0;
+  width: 150px;
+  font-size: 16px;
+  text-transform: uppercase;
+
+  z-index: 1;
+  outline: none;
+
+  display: grid;
+  grid-template-areas: "select";
+  align-items: center;
+  position: relative;
+
+  color: #334155;
+  background-color: #fff;
+  background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
+  border: 1px solid #777;
+  border-radius: 0.25em;
+  padding: 0.25em 0.5em;
+
+  cursor: pointer;
+  line-height: 1.1;
+}
+
+.prose .code-fence .code-fence-select:after {
+  grid-area: select;
+  content: "";
+  justify-self: end;
+  width: 0.8em;
+  height: 0.5em;
+  background-color: #777;
+  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+}
+
+.prose .md-image {
+  margin: 1.8em 0;
+}
+
+.prose .md-image img {
+  margin: 0;
+}
+
+.hfz-view {
   display: flex;
   flex-direction: column;
-  max-height: 200px;
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.hfz-view .action-bar {
+  opacity: 0;
+  position: absolute;
+  top: 18px;
+  right: 9px;
+  z-index: 1;
+}
+
+.hfz-view:hover .action-bar {
+  opacity: 100;
+}
+
+.hfz-view iframe {
+  width: 100%;
+  border: none;
+  /* transition: height 300ms ease; */
+  height: 60px;
+  background: white;
 }
 </style>

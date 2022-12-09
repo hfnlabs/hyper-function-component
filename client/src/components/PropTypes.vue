@@ -1,340 +1,285 @@
+<script setup lang="ts">
+import type { editor } from 'monaco-editor'
+import { useDebounceFn } from '@vueuse/core'
+import { computed, onMounted, ref } from 'vue'
+import { usePropTypes } from '@/composables/usePropTypes'
+const propEditor = ref<HTMLDivElement>()
+
+type MonacoApi = typeof import('monaco-editor/esm/vs/editor/editor.api')
+const { propTypes, fetchPropTypes, updatePropTypes, checkPropTypes } = usePropTypes()
+const monacoApi = ref<MonacoApi>()
+const monacoEditor = ref<editor.IStandaloneCodeEditor>()
+const typePos = ref<Record<string, { start: { offset: number; line: number; column: number }; end: { offset: number; line: number; column: number } }>>({})
+
+const onChangeCode = useDebounceFn(async (code: string) => {
+  const checkRes = await checkPropTypes(code)
+  const { editor } = monacoApi!.value!
+  editor.removeAllMarkers('hfcpack')
+  propEditor.value!.classList.remove('ring-3', 'ring-red-500', 'ring-yellow-500')
+
+  if (checkRes.err === 'OK') {
+    typePos.value = checkRes.typePos
+
+    const { unkonwType } = checkRes
+    const unkonwTypeMarkers: editor.IMarkerData[] = []
+
+    Object.keys(unkonwType).forEach((key) => {
+      const pos = unkonwType[key]
+      unkonwTypeMarkers.push({
+        startColumn: pos.start.column,
+        startLineNumber: pos.start.line,
+        endColumn: pos.end.column,
+        endLineNumber: pos.end.line,
+        message: `Unkonw type: ${key}`,
+        severity: monacoApi.value!.MarkerSeverity.Error,
+      })
+    })
+
+    if (unkonwTypeMarkers.length) {
+      editor.setModelMarkers(
+        monacoEditor.value!.getModel()!,
+        'hfcpack',
+        unkonwTypeMarkers,
+      )
+
+      propEditor.value!.classList.add('ring-3', 'ring-yellow-500')
+    }
+    else {
+      updatePropTypes(code)
+    }
+  }
+  else if (checkRes.err === 'SYNTAX_ERROR') {
+    const { location, errmsg } = checkRes
+    editor.setModelMarkers(
+      monacoEditor.value!.getModel()!,
+      'hfcpack',
+      [{
+        startColumn: location.start.column,
+        startLineNumber: location.start.line,
+        endColumn: location.end.column,
+        endLineNumber: location.end.line,
+        message: errmsg,
+        severity: monacoApi.value!.MarkerSeverity.Error,
+      }],
+    )
+    propEditor.value!.classList.add('ring-3', 'ring-red-600')
+  }
+  else {
+    console.log('Unknown Error')
+  }
+}, 200)
+
+const suggestions = computed(() => {
+  const items = [
+    {
+      label: 'String',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'String',
+      detail: 'Type String',
+    },
+    {
+      label: 'Int',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'Int',
+      detail: 'Type Int',
+    },
+    {
+      label: 'Float',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'Float',
+      detail: 'Type Float',
+    },
+    {
+      label: 'Boolean',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'Boolean',
+      detail: 'Type Boolean',
+    },
+    {
+      label: 'Any',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'Any',
+      detail: 'Type Any',
+    },
+    {
+      label: 'Ts',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'Ts',
+      detail: 'Type Ts',
+    },
+  ]
+
+  Object.keys(typePos.value).forEach((key) => {
+    items.push({
+      label: key,
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: key,
+      detail: `Type ${key}`,
+    })
+  })
+
+  return items
+})
+
+function setupMonaco(monaco: MonacoApi) {
+  monaco.languages.registerCompletionItemProvider('hfc', {
+    // @ts-expect-error ts(2322)
+    provideCompletionItems(model, position, context, token) {
+      const line = model.getLineContent(position.lineNumber)
+      if (line.includes(':')) {
+        return {
+          suggestions: suggestions.value,
+        }
+      }
+
+      return {
+        suggestions: [
+          {
+            label: 'model',
+            kind: monaco.languages.CompletionItemKind.Snippet,
+            insertText: ['model $1 {', '\t$0', '}'].join('\n'),
+            insertTextRules:
+            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Model Snippet',
+          },
+        ],
+      }
+    },
+  })
+
+  monaco.languages.registerDefinitionProvider('hfc', {
+    provideDefinition(model, position, token) {
+      const line = model.getLineContent(position.lineNumber)
+      const colonIndex = line.indexOf(':')
+      if (colonIndex === -1)
+        return
+
+      const match = line.match(/:(\s*)(\S+)/)
+      if (!match)
+        return
+
+      const space = match[1]
+      const typeName = match[2]
+
+      const typePosInfo = typePos.value[typeName]
+      if (!typePosInfo)
+        return
+
+      return {
+        uri: model.uri,
+        originSelectionRange: new monaco.Range(
+          position.lineNumber,
+          colonIndex + space.length + 2,
+          position.lineNumber,
+          colonIndex + space.length + 2 + typeName.length,
+        ),
+        range: new monaco.Range(
+          typePosInfo.start.line,
+          typePosInfo.start.column,
+          typePosInfo.end.line,
+          typePosInfo.end.column,
+        ),
+      }
+    },
+  })
+
+  monaco.languages.registerHoverProvider('hfc', {
+    provideHover(model, position, token) {
+      const line = model.getLineContent(position.lineNumber)
+      const colonIndex = line.indexOf(':')
+      if (colonIndex === -1)
+        return
+
+      const match = line.match(/:(\s*)(\S+)/)
+      if (!match)
+        return
+
+      const space = match[1]
+      const typeName = match[2]
+
+      const typePosInfo = typePos.value[typeName]
+      if (!typePosInfo)
+        return
+
+      const content = model.getValue()
+      return {
+        range: new monaco.Range(
+          position.lineNumber,
+          colonIndex + space.length + 2,
+          position.lineNumber,
+          colonIndex + space.length + 2 + typeName.length,
+        ),
+        contents: [
+          {
+            value: `\`\`\`hfc\n${content.slice(typePosInfo.start.offset, typePosInfo.end.offset)}\n\`\`\``,
+          },
+        ],
+      }
+    },
+  })
+}
+
+onMounted(async () => {
+  await fetchPropTypes()
+  import('../monaco').then(async ({ monaco, initMonaco, createEditor }) => {
+    await initMonaco()
+    monacoApi.value = monaco
+    const editor = createEditor(propEditor.value!, {
+      'value': propTypes.value,
+      'language': 'hfc',
+      'theme': 'vs-dark',
+      'contextmenu': false,
+      'bracketPairColorization': {
+        enabled: true,
+      },
+      'scrollbar': { alwaysConsumeMouseWheel: false },
+      // @ts-expect-error missing in type
+      'bracketPairColorization.enabled': true,
+      'scrollBeyondLastLine': false,
+      'fontSize': 14,
+      'tabSize': 2,
+      'folding': true,
+      'wordWrap': 'on',
+      'wrappingStrategy': 'advanced',
+      'minimap': {
+        enabled: false,
+      },
+      'padding': {
+        top: 8,
+        bottom: 8,
+      },
+      'overviewRulerLanes': 0,
+    })
+
+    monacoEditor.value = editor
+
+    const updateHeight = () => {
+      const contentHeight = Math.max(500, editor.getContentHeight())
+      propEditor.value!.style.height = `${contentHeight + 2}px`
+      editor.layout()
+    }
+    editor.onDidContentSizeChange(updateHeight)
+    updateHeight()
+
+    editor.onDidChangeModelContent(() => {
+      const code = editor.getValue()
+      onChangeCode(code)
+    })
+
+    const code = editor.getValue()
+    onChangeCode(code)
+
+    setupMonaco(monaco)
+  })
+})
+</script>
+
 <template>
   <div>
-    <div class="text-xl font-semibold py-2">Attrs</div>
-    <table
-      class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400"
-    >
-      <thead
-        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-      >
-        <tr>
-          <th scope="col" class="py-3 pl-6 w-1/5" style="width: 20%">Name</th>
-          <th scope="col" class="py-3 pl-6 w-2/5">Description</th>
-          <th scope="col" class="py-3 pl-6 w-1/5" style="width: 20%">Type</th>
-          <th scope="col" class="py-3 pl-6 w-1/5" style="width: 20%">
-            Default
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(item, index) in attrs"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <td class="py-2 pl-6 font-semibold font-mono break-all">
-            <span class="text-gray-200">
-              {{ "·".repeat((item.level || 0) * 2) }}
-            </span>
-            <span>{{ item.name }}</span>
-          </td>
-          <td class="py-2 pl-6 break-words">{{ item.desc }}</td>
-          <td
-            class="py-2 pl-6 break-words"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(attrs, item, index)"
-          >
-            {{ item.type }}
-          </td>
-          <td class="py-2 pl-6 break-words">{{ item.default }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="text-xl font-semibold py-2 pt-10">Events</div>
-    <table
-      class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400"
-    >
-      <thead
-        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-      >
-        <tr>
-          <th scope="col" class="py-3 pl-6 w-1/5">Name</th>
-          <th scope="col" class="py-3 pl-6 w-3/5">Description</th>
-          <th scope="col" class="py-3 pl-6 w-1/5">Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(item, index) in events"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <td class="py-2 pl-6 font-semibold font-mono">
-            <span class="text-gray-200">
-              {{ "·".repeat((item.level || 0) * 2) }}
-            </span>
-            <span>{{ item.name }}</span>
-          </td>
-          <td class="py-2 pl-6">{{ item.desc }}</td>
-          <td
-            class="py-2 pl-6"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(events, item, index)"
-          >
-            {{ item.type }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="text-xl font-semibold py-2 pt-10">Slots</div>
-    <table
-      class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400"
-    >
-      <thead
-        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-      >
-        <tr>
-          <th scope="col" class="py-3 pl-6 w-1/5">Name</th>
-          <th scope="col" class="py-3 pl-6 w-3/5">Description</th>
-          <th scope="col" class="py-3 pl-6 w-1/5">Type</th>
-        </tr>
-      </thead>
-      <tbody
-        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-      >
-        <tr
-          v-for="(item, index) in slots"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <td class="py-2 pl-6 font-semibold font-mono">
-            <span class="text-gray-200">
-              {{ "·".repeat((item.level || 0) * 2) }}
-            </span>
-            <span>{{ item.name }}</span>
-          </td>
-          <td class="py-2 pl-6">{{ item.desc }}</td>
-          <td
-            class="py-2 pl-6"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-            @click="renderSubType(slots, item, index)"
-          >
-            {{ item.type }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="text-xl font-semibold py-2 pt-10">Methods</div>
-    <table
-      class="table-fixed w-full text-sm text-left text-gray-500 dark:text-gray-400"
-    >
-      <thead
-        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-      >
-        <tr>
-          <th scope="col" class="py-3 pl-6 w-[20%]">Name</th>
-          <th scope="col" class="py-3 pl-6 w-[50%]">Description</th>
-          <th scope="col" class="py-3 pl-6 w-[30%]">Type</th>
-        </tr>
-      </thead>
-      <tbody
-        class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-      >
-        <tr
-          v-for="(item, index) in methods"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-        >
-          <td class="py-2 pl-6 font-semibold font-mono">
-            <span class="text-gray-200">
-              {{ "·".repeat((item.level || 0) * 2) }}
-            </span>
-            <span>{{ item.name }}</span>
-          </td>
-          <td class="py-2 pl-6">{{ item.desc }}</td>
-          <td
-            class="py-2 pl-6"
-            :style="{ cursor: item.isObject ? 'pointer' : '' }"
-          >
-            <div v-if="item.level === 0" class="flex">
-              <span
-                class="pr-4 mr-4 border-r-2"
-                @click="renderSubType(methods, item, index, 'args')"
-              >
-                Args
-              </span>
-              <span @click="renderSubType(methods, item, index, 'result')">
-                Result
-              </span>
-            </div>
-            <span v-else @click="renderSubType(methods, item, index)">
-              {{ item.type }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div ref="propEditor" class="border min-h-[300px]" />
   </div>
 </template>
 
-<script setup lang="ts">
-import { inject, ref, watch, onMounted } from "vue";
+<style scoped>
 
-type RowItem = Partial<{
-  name: string;
-  desc: string;
-  t: string;
-  type: string;
-  types: any;
-  isObject: boolean;
-  level: number;
-  default: string;
-
-  // for method
-  isAsync?: boolean;
-  args?: any;
-  result?: any;
-}>;
-
-const attrs = ref<RowItem[]>([]);
-const events = ref<RowItem[]>([]);
-const slots = ref<RowItem[]>([]);
-const methods = ref<RowItem[]>([]);
-
-const propTypes = inject<any>("propTypes")!;
-watch(propTypes, () => {
-  parsePropTypes();
-});
-
-onMounted(() => {
-  parsePropTypes();
-});
-
-let TYPES: Record<string, any> = {};
-
-async function parsePropTypes() {
-  TYPES = propTypes.value;
-  attrs.value = packTypes(TYPES.Attrs, 0);
-
-  events.value = Object.keys(TYPES.Events).map((name) => {
-    const event = TYPES.Events[name];
-    return {
-      name,
-      desc: event.c || "",
-      t: event.t,
-      type: `Function (${Object.keys(event.t).length})`,
-      isObject: true,
-      level: 0,
-    };
-  });
-
-  slots.value = Object.keys(TYPES.Slots).map((name) => {
-    const slot = TYPES.Slots[name];
-    let t = slot.t;
-    let typeName = "Slot";
-    if (typeof t === "string") {
-      typeName = t;
-      t = TYPES[t];
-    }
-
-    return {
-      name,
-      desc: slot.c || "",
-      t,
-      type: `${typeName} (${Object.keys(t || {}).length})`,
-      isObject: true,
-      level: 0,
-    };
-  });
-
-  methods.value = Object.keys(TYPES.Methods).map((name) => {
-    const method = TYPES.Methods[name];
-    const isAsync = !!method.async;
-
-    let args = method.t.args;
-    const result = method.t.result;
-
-    return {
-      name,
-      desc: method.c || "",
-      t: "",
-      type: "",
-      isObject: true,
-      level: 0,
-
-      isAsync,
-      args,
-      result,
-    };
-  });
-}
-
-function renderSubType(
-  arr: RowItem[],
-  item: RowItem,
-  index: number,
-  fieldName?: "args" | "result"
-) {
-  if (!item.isObject) return;
-
-  const nextItem = arr[index + 1];
-  let expanded = nextItem && nextItem.level! > item.level!;
-
-  if (fieldName === "args") {
-    if (item.type !== "args") expanded = false;
-    item.type = "args";
-    item.t = item.args.t;
-  } else if (fieldName === "result") {
-    if (item.type !== "result") expanded = false;
-    item.type = "result";
-    item.t = item.result.t;
-  }
-
-  let count = 0;
-  let cur = index + 1;
-  while (arr[cur]) {
-    if (!arr[cur] || arr[cur].level! <= item.level!) break;
-    cur++;
-    count++;
-  }
-  arr.splice(index + 1, count);
-
-  if (expanded) return;
-  let items: any[] = packTypes(item.t, item.level! + 1);
-
-  if (!items.length) return;
-  arr.splice(index + 1, 0, ...items);
-}
-
-function packTypes(obj: any, level: number) {
-  return Object.keys(obj).map((name) => {
-    const item = obj[name];
-
-    if (!item.t) {
-      item.type = "Unknow Type";
-    } else if (typeof item.t === "string") {
-      if (item.t[0] === "#") {
-        item.type =
-          (
-            {
-              "#s": "String",
-              "#i": "Int",
-              "#f": "Float",
-              "#b": "Boolean",
-              "#a": "Any",
-            } as Record<string, string>
-          )[item.t] + (item.a ? "[]" : "");
-      } else {
-        const type = TYPES[item.t];
-        if (type) {
-          item.isObject = true;
-          item.type = `${item.t}${item.a ? "[]" : ""} (${
-            Object.keys(type).length
-          })`;
-          item.t = type;
-        } else {
-          item.type = "Unknow Type";
-        }
-      }
-    } else {
-      item.isObject = true;
-      item.type = `Object${item.a ? "[]" : ""} (${Object.keys(item.t).length})`;
-    }
-
-    item.desc = item.c || "";
-    item.default = item.d || "";
-    item.level = level || 0;
-    item.name = name;
-    return item;
-  });
-}
-</script>
+</style>

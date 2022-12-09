@@ -1,5 +1,5 @@
 export default defineHfcPackConfig({
-  entry: "./src/index.js",
+  entry: './src/index.js',
   plugins: [],
-  sharedNpmImports: ["vue/dist/vue.esm-browser.prod.js"],
-});
+  sharedNpmImports: ['vue/dist/vue.esm-browser.prod.js'],
+})

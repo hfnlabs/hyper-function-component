@@ -1,29 +1,28 @@
 export function listenBuildEvents(
-  callback: (data: { action: string; payload: any }) => void
+  callback: (data: { action: string; payload: any }) => void,
 ) {
-  let msgId = 0;
-  let retryTimes = 0;
+  let msgId = 0
+  let retryTimes = 0
   function fetchEvent() {
-    fetch("/api/events" + (msgId ? "?id=" + msgId : ""))
-      .then((res) => res.json())
+    fetch(`/api/events${msgId ? `?id=${msgId}` : ''}`)
+      .then(res => res.json())
       .then((event) => {
-        retryTimes = 0;
-        msgId = event.id;
-        fetchEvent();
+        retryTimes = 0
+        msgId = event.id
+        fetchEvent()
 
-        callback(event.data);
+        callback(event.data)
       })
       .catch((err) => {
-        console.error("fetch event error", err);
-        if (retryTimes > 10) {
-          return;
-        }
+        console.error('fetch event error', err)
+        if (retryTimes > 10)
+          return
 
-        retryTimes++;
+        retryTimes++
         setTimeout(() => {
-          fetchEvent();
-        }, 3000);
-      });
+          fetchEvent()
+        }, 3000)
+      })
   }
-  fetchEvent();
+  fetchEvent()
 }

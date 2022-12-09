@@ -1,0 +1,36 @@
+model Attr {
+  // 1122
+  s: String
+  i: Int
+  f: Float
+  b: Boolean
+  a: Ts @def("HTMLElement")
+  u: User
+}
+
+model Event {
+  onClick: {
+    e: Any
+  }
+}
+
+model Slot {
+  header: {
+    title: String
+  }
+}
+
+model Method {
+  open: {
+    arg: {
+      duration: Int
+    }
+    ret: {
+      ok: Boolean
+    }
+  }
+}
+
+model User {
+  name: String
+}

@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "start": "hfcpack",
+    "dev": "node ../../dev.js",
     "build": "hfcpack build",
     "publish-hfc": "hfcpack publish",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -29,5 +30,6 @@
   },
   "hfc": {
     "name": "awa-btn"
-  }
+  },
+  "banner": "/imgs/cGDrVjXITc8K1q-KK1Cs0.png"
 }

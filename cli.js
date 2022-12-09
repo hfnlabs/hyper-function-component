@@ -1,3 +1,5 @@
 #!/usr/bin/env node
 
-import "./dist/cli.js";
+import { runCli } from './dist/hfcpack.js'
+
+runCli()
