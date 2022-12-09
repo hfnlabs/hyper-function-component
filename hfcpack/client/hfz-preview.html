@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HFZ Preview</title>
+    <style>
+      body.dragging iframe {
+        pointer-events: none;
+      }
+      body.dragging-row {
+        cursor: row-resize;
+      }
+      body.dragging-col {
+        cursor: col-resize;
+      }
+
+      #hfz-editor {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hfz-app"></div>
+    <div id="hfz-editor"></div>
+    <script type="module" src="/src/hfz-preview/index.ts"></script>
+  </body>
+</html>

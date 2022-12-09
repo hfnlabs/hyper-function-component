@@ -2,6 +2,7 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "./prism.css";
+@import "toastify-js/src/toastify.css";
 
 @font-face {
   font-family: "Inter";
@@ -39,62 +40,6 @@
     format("woff2");
 }
 
-.shiki p {
-  display: inline;
-  margin: 0;
-}
-.sk-1 {
-  color: var(--tw-prose-pre-bg);
-}
-.sk-2 {
-  color: var(--tw-prose-pre-code);
-}
-.sk-3 {
-  color: #81a1c1;
-}
-.sk-4 {
-  color: #8fbcbb;
-}
-.sk-5 {
-  color: #a3be8c;
-}
-.sk-6 {
-  color: #ebcb8b;
-}
-.sk-7 {
-  color: #8fbcbb;
-}
-.sk-8 {
-  color: #88c0d0;
-}
-.sk-9 {
-  color: #616e88;
-}
-.sk-10 {
-  color: #ebcb8b;
-}
-.sk-11 {
-  color: #b48ead;
-}
-.sk-12 {
-  color: #bf616a;
-}
-.sk-13 {
-  color: #5e81ac;
-}
-.sk-14 {
-  color: #d08770;
-}
-.sk-i {
-  font-style: italic;
-}
-.sk-b {
-  font-weight: bold;
-}
-.sk-u {
-  text-decoration: underline;
-}
-
 .milkdown {
   box-shadow: none !important;
 }
@@ -121,4 +66,23 @@
     #eef1f5 10px,
     #eef1f5 calc(2 * 10px)
   );
+}
+
+body.dragging iframe {
+  pointer-events: none;
+}
+
+body.dragging-row {
+  cursor: row-resize;
+}
+
+body.dragging-col {
+  cursor: col-resize;
+}
+
+.md-image .action-bar {
+  opacity: 0;
+}
+.md-image:hover .action-bar {
+  opacity: 100;
 }
