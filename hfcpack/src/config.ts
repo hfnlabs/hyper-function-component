@@ -53,7 +53,6 @@ export type ResolvedConfig = HfcConfig & {
   propTypesPath: string
   pkgOutputPath: string
   hfmOutputPath: string
-  docOutputPath: string
   hfcDocImgPath: string
   cssVarsDistPath: string
   propTypesDistPath: string
@@ -103,7 +102,6 @@ export async function resolveConfig(
 
   const pkgOutputPath = path.resolve(outputPath, 'pkg')
   const hfmOutputPath = path.resolve(outputPath, 'hfm')
-  const docOutputPath = path.resolve(outputPath, 'doc')
   const manifestPath = path.resolve(outputPath, 'manifest.json')
   const cssVarsDistPath = path.resolve(outputPath, 'css-vars.json')
   const propTypesDistPath = path.resolve(outputPath, 'prop-types.json')
@@ -115,7 +113,7 @@ export async function resolveConfig(
   const propTypesPath = path.join(hfcpackPath, 'props.hfc')
 
   await Promise.all(
-    [outputPath, pkgOutputPath, hfmOutputPath, docOutputPath, hfcpackPath, hfcDocImgPath].map(p =>
+    [outputPath, pkgOutputPath, hfmOutputPath, hfcpackPath, hfcDocImgPath].map(p =>
       fs.mkdir(p, { recursive: true }),
     ),
   )
@@ -201,7 +199,7 @@ export async function resolveConfig(
     rollupOptions,
     deps,
     name: packageJson.name,
-    port: Number(process.env.PORT) || Number(config.port) || 6666,
+    port: Number(process.env.PORT) || Number(config.port) || 8787,
     hfcName: process.env.HFC_NAME || packageJson.hfc.name,
     version: process.env.HFC_VERSION || packageJson.version,
     license: process.env.HFC_LICENSE || packageJson.license || '',
@@ -214,7 +212,6 @@ export async function resolveConfig(
     hfcDocImgPath,
     pkgOutputPath,
     hfmOutputPath,
-    docOutputPath,
     cssVarsDistPath,
     propTypesDistPath,
     devDependencies,

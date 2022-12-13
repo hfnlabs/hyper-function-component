@@ -103,7 +103,11 @@ function renderHfzView(id: string, container: HTMLDivElement) {
   )
 
   let sandboxHeight = code.minHeight || 60
-  sandbox.src = '/hfz-preview.html'
+  const query = new URLSearchParams()
+  query.set('id', id)
+  query.set('name', name)
+  query.set('version', version)
+  sandbox.src = `/hfz-preview.html?${query.toString()}`
   sandboxContainer.appendChild(sandbox)
 
   const bottomSpliterElem = document.createElement('div')
@@ -137,8 +141,6 @@ function renderHfzView(id: string, container: HTMLDivElement) {
           action: 'render',
           data: {
             code: code.value,
-            name,
-            version,
           },
         })
       },
@@ -171,9 +173,7 @@ function renderHfzView(id: string, container: HTMLDivElement) {
 
     createApp(HfzPreviewActionBar, {
       onClickOpen() {
-        (sandbox as any).iFrameResizer.sendMessage({
-          action: 'openInNewTab',
-        })
+        window.open(`/hfz-preview.html?${query.toString()}`, '_blank')
       },
       onClickEdit() {
         showMonacoEditor()
@@ -208,6 +208,7 @@ function renderHfzView(id: string, container: HTMLDivElement) {
     const pre = document.createElement('pre')
     pre.style.margin = '1em 0'
     pre.style.maxHeight = '400px'
+    pre.style.overflowY = 'hidden'
 
     const codeHighlightBlock = document.createElement('code')
     codeHighlightBlock.classList.add('language-hfz')

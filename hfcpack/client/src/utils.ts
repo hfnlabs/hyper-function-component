@@ -7,29 +7,29 @@ export function useSpliter(pos: 'top' | 'right' | 'bottom' | 'left', elem: HTMLD
     right: '0',
     bottom: '0',
     cursor: isVertical ? 'col-resize' : 'row-resize',
-    height: isVertical ? '100%' : '5px',
-    width: isVertical ? '5px' : '100%',
+    height: isVertical ? '100%' : '6px',
+    width: isVertical ? '6px' : '100%',
     zIndex: '1',
   }
 
   if (pos === 'top') {
     delete style.bottom
-    style.top = '-5px'
+    style.top = '-3px'
   }
 
   else if (pos === 'left') {
     delete style.right
-    style.left = '-5px'
+    style.left = '-3px'
   }
 
   else if (pos === 'right') {
     delete style.left
-    style.right = '-5px'
+    style.right = '-3px'
   }
 
   else if (pos === 'bottom') {
     delete style.top
-    style.bottom = '-5px'
+    style.bottom = '-3px'
   }
 
   Object.assign(elem.style, style)

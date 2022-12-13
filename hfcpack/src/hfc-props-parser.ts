@@ -1,4 +1,5 @@
-import * as parser from '../hfc-props-peg.js'
+// @ts-expect-error no types
+import * as parser from 'hfc-props-parser'
 
 type Model = Record<string, Field>
 interface Field {

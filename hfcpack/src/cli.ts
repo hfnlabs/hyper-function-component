@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { readFileSync } from 'fs'
 import colors from 'picocolors'
-import minimist from 'minimist'
 import prompts from 'prompts'
 import updateNotifier from 'simple-update-notifier'
 import pleaseUpgradeNode from 'please-upgrade-node'
+import cac from 'cac'
 
 import { Service } from './service.js'
 import { publish, readToken } from './publish.js'
@@ -20,116 +20,104 @@ const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-
 pleaseUpgradeNode(pkg)
 updateNotifier({ pkg })
 
-const argv = minimist(process.argv.slice(2))
+const context = process.env.HFC_CLI_CONTEXT || process.cwd()
+const cwdPkgPath = join(context, 'package.json')
+const cwdPkg = JSON.parse(readFileSync(cwdPkgPath, 'utf-8'))
+
+if (!/^\d+(?:\.\d+){2}$/.test(cwdPkg.version)) {
+  console.log('version format must be X.Y.Z, eg: 1.2.3')
+  process.exit(-1)
+}
 
 export async function runCli() {
-  if (argv.v || argv.version) {
-    console.log(pkg.version)
-    process.exit(0)
+  const cli = cac('hfcpack')
+
+  cli.command('[command]', 'run dev server').action(runServe)
+  cli.command('build', 'build for production').action(runBuild)
+  cli.command('login', 'login').option('--token', 'token for publish HFC').action(runLogin)
+  cli.command('publish', 'publish HFC').option('--skip-build', 'skip build').action(runPublish)
+
+  cli.help()
+  cli.version(pkg.version)
+  cli.parse()
+}
+
+async function runServe() {
+  const service = new Service(context, 'serve')
+  await service.run()
+  await service.devServer?.listen()
+}
+
+async function runLogin({ token }: { token?: string }) {
+  if (!token) {
+    try {
+      console.log(
+          `You can generate token at: ${
+             colors.green(colors.bold('https://hyper.fun/settings/tokens'))}`,
+      )
+
+      const answers = await prompts.prompt([
+        {
+          name: 'token',
+          message: 'Enter Access Token:',
+          type: 'password',
+          mask: '*',
+        },
+      ])
+
+      if (!answers.token) {
+        console.log('cancel login')
+        return
+      }
+
+      token = answers.token
+    }
+    catch (error) {
+      if ((error as any).isTtyError) {
+        console.log('run "npx hfcpack login --token=<token>"')
+        return
+      }
+
+      console.log('something wrong: ', error)
+      return
+    }
   }
 
-  const context = process.env.HFC_CLI_CONTEXT || process.cwd()
-  const cwdPkgPath = join(context, 'package.json')
-  const cwdPkg = JSON.parse(await fs.readFile(cwdPkgPath, 'utf-8'))
-  if (
-    !cwdPkg.hfcName
-    || verifyHfcName(cwdPkg.hfcName) !== true
-  ) {
-    const name = '' // await askForHfcName()
+  await fs.mkdir(join(os.homedir(), '.hfc'), { recursive: true })
+  await fs.writeFile(join(os.homedir(), '.hfc', 'token'), token!)
+  console.log('login success')
+}
 
-    cwdPkg.hfcName = name
-    await fs.writeFile(cwdPkgPath, JSON.stringify(cwdPkg, null, 2))
-  }
+async function runBuild() {
+  const service = new Service(context, 'build')
+  service.run()
+}
 
-  if (!/^\d+(?:\.\d+){2}$/.test(cwdPkg.version)) {
-    console.log('version format must be X.Y.Z, eg: 1.2.3')
+async function runPublish({ token, skipBuild }: { token?: string; skipBuild?: boolean }) {
+  if (!token)
+    token = readToken()
+
+  if (!token)
+    await runLogin({ })
+
+  token = readToken()
+  if (!token) {
+    console.log('fail to read token')
     process.exit(-1)
   }
 
-  run(argv._[0], context)
-}
-
-async function run(command: string, context: string) {
-  if (!command) {
-    const service = new Service(context, 'serve')
-    await service.run()
-    await service.devServer?.listen()
+  if (skipBuild) {
+    publish({ token })
+    return
   }
-  else if (command === 'login') {
-    let token = argv.token
 
-    if (!token) {
-      try {
-        console.log(
-          `You can generate token at: ${
-             colors.green(colors.bold('https://hyper.fun/settings/tokens'))}`,
-        )
+  const service = new Service(context, 'build')
 
-        const answers = await prompts.prompt([
-          {
-            name: 'token',
-            message: 'Enter Access Token:',
-            type: 'password',
-            mask: '*',
-          },
-        ])
+  service.on('ready', () => {
+    publish({ token: token! })
+  })
 
-        if (!answers.token) {
-          console.log('cancel login')
-          return
-        }
-
-        token = answers.token
-      }
-      catch (error) {
-        if ((error as any).isTtyError) {
-          console.log('run "npx hfc-cli-service login --token=<token>"')
-          return
-        }
-
-        console.log('something wrong: ', error)
-        return
-      }
-    }
-
-    await fs.mkdir(join(os.homedir(), '.hfc'), { recursive: true })
-    await fs.writeFile(join(os.homedir(), '.hfc', 'token'), token)
-    console.log('login success')
-  }
-  else if (command === 'build') {
-    const service = new Service(context, 'build')
-    service.run()
-  }
-  else if (command === 'publish') {
-    let token = argv.token
-    if (!token)
-      token = readToken()
-
-    if (!token)
-      await run('login', context)
-
-    token = readToken()
-    if (!token) {
-      console.log('fail to read token')
-      process.exit(-1)
-    }
-
-    if (argv['skip-build']) {
-      publish({ token })
-      return
-    }
-
-    const service = new Service(context, 'build')
-
-    service.on('ready', () => {
-      publish({ token })
-    })
-
-    service.run()
-  }
-  else {
-    console.log('unknow command')
-  }
+  service.run()
 }
 
 function verifyHfcName(input: string) {

@@ -1,6 +1,19 @@
 import fs from 'fs'
 import fsp from 'fs/promises'
 import path from 'path'
+import xxhash from 'xxhash-wasm'
+
+let xxhasher: Awaited<ReturnType<typeof xxhash>>
+export async function xxhash64(input: Buffer) {
+  if (!xxhasher)
+    xxhasher = await xxhash()
+
+  const value = xxhasher.h64Raw(input)
+  const buf64 = Buffer.allocUnsafe(8)
+  buf64.writeBigUint64BE(value)
+
+  return buf64
+}
 
 export function ensureFileSync(file: string) {
   let stats
@@ -42,7 +55,7 @@ export async function readJson(file: string) {
   return JSON.parse(content)
 }
 
-export async function readJsonSync(file: string) {
+export function readJsonSync(file: string) {
   const content = fs.readFileSync(file, 'utf-8')
   return JSON.parse(content)
 }
@@ -53,7 +66,7 @@ export async function wirteJson(file: string, data: Record<string, any>, space =
   await fsp.writeFile(file, str)
 }
 
-export async function wirteJsonSync(file: string, data: Record<string, any>, space = 0) {
+export function wirteJsonSync(file: string, data: Record<string, any>, space = 0) {
   const str = JSON.stringify(data, null, space)
 
   fs.writeFileSync(file, str)
