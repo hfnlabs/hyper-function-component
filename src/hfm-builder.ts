@@ -30,11 +30,17 @@ function generateSharedNpmBuildScript(name: string) {
 
 export class HfmBuilder extends EventEmitter {
   mode: 'production' | 'development'
+  outDir: string
   viteConfig!: InlineConfig
   sharedDeps: { npm: string; name: string; ver: string; rv: string }[] = []
   externals: string[] = []
   constructor(private config: ResolvedConfig) {
     super()
+    this.outDir = path.resolve(
+      this.config.hfmOutputPath,
+      this.config.hfcName,
+      this.config.version,
+    )
     this.mode = config.command === 'build' ? 'production' : 'development'
   }
 
@@ -84,11 +90,7 @@ export class HfmBuilder extends EventEmitter {
             chunkFileNames: '[name].js',
           },
         },
-        outDir: path.resolve(
-          this.config.hfmOutputPath,
-          this.config.hfcName,
-          this.config.version,
-        ),
+        outDir: this.outDir,
         emptyOutDir: false,
         minify: this.config.command === 'build',
       },
@@ -156,20 +158,7 @@ export class HfmBuilder extends EventEmitter {
     (function () {
       const currentUrl = document.currentScript.src;
 
-      $HFC_LOAD_CSS(currentUrl.replace("hfc.js", "style.css"));
-      const cssVars = ${JSON.stringify(
-        this.config.cssVars.map(item => ({
-          name: item.name,
-          value: item.value,
-        })),
-      )};
-
-      const rootStyle = getComputedStyle(document.documentElement);
-      cssVars.forEach(item => {
-        if (!rootStyle.getPropertyValue(item.name)) {
-          document.documentElement.style.setProperty(item.name, item.value);
-        }
-      });
+      $HFC_LOAD_CSS(currentUrl.replace("hfm.js", "hfm.css"));
 
       const deps = ${JSON.stringify(
         this.sharedDeps.map(dep => ({
@@ -222,6 +211,17 @@ export class HfmBuilder extends EventEmitter {
     output.footer = wrapCode.end
 
     await build(this.viteConfig)
+
+    const cssVars = `\
+:root {
+${this.config.cssVars.map(item => `  ${item.name}: ${item.value};`).join('\n')}
+}
+`
+
+    const styleContent = await fs.readFile(path.join(this.outDir, 'style.css'), 'utf-8')
+
+    await fs.writeFile(path.join(this.outDir, 'hfm.css'), cssVars + styleContent)
+
     this.emit('build-complete')
   }
 }

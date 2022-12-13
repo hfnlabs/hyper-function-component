@@ -55,13 +55,13 @@ export const image = createNode(() => {
         match: ({ type }) => type === NODE_ID,
         runner: (state, node, type) => {
           let url = node.url as string
-          let alt = node.alt as string
-          const title = node.title as string
+          let alt = node.alt as string || ''
+          const title = node.title as string || ''
 
-          // do not allow external image link
+          // only support local image
           if (!url.startsWith('/imgs/')) {
             url = ''
-            alt = 'External image link is not support.'
+            alt = ''
           }
 
           state.addNode(type, {
@@ -153,9 +153,9 @@ export const image = createNode(() => {
         img.style.maxWidth = '100%'
 
         const url = new URL(src, window.location.origin)
-        const width = url.searchParams.get('w') || ''
-        const height = url.searchParams.get('h') || ''
-        const align = url.searchParams.get('a') || 'left'
+        const width = url.searchParams.get('_w') || ''
+        const height = url.searchParams.get('_h') || ''
+        const align = url.searchParams.get('_a') || 'left'
 
         if (width)
           img.style.width = `${width}px`
@@ -181,15 +181,15 @@ export const image = createNode(() => {
           width,
           height,
           onChangWidth(value: number) {
-            value ? url.searchParams.set('w', `${value}`) : url.searchParams.delete('w')
+            value ? url.searchParams.set('_w', `${value}`) : url.searchParams.delete('w')
             ctx.get(commandsCtx).call(ModifyImage, `${url.pathname}?${url.searchParams.toString()}`)
           },
           onChangHeight(value: number) {
-            value ? url.searchParams.set('h', `${value}`) : url.searchParams.delete('h')
+            value ? url.searchParams.set('_h', `${value}`) : url.searchParams.delete('h')
             ctx.get(commandsCtx).call(ModifyImage, `${url.pathname}?${url.searchParams.toString()}`)
           },
           onChangAlign(value: 'left' | 'center' | 'right' | undefined) {
-            value ? url.searchParams.set('a', `${value}`) : url.searchParams.delete('a')
+            value ? url.searchParams.set('_a', `${value}`) : url.searchParams.delete('a')
             ctx.get(commandsCtx).call(ModifyImage, `${url.pathname}?${url.searchParams.toString()}`)
           },
         }).mount(actionBar)

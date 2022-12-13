@@ -7,41 +7,51 @@ import fetch, { FormData, fileFromSync } from 'node-fetch'
 
 export async function publish({ token }: { token: string }) {
   const context = process.env.HFC_CLI_CONTEXT || process.cwd()
+  const hfcpackPath = join(context, 'hfcpack')
   const outputPath = join(context, '.hfc', 'build')
 
-  // ! file must append at the end of formData, string field must before file field
+  // ! file must append at the end of formData
   const form = new FormData()
   form.append('token', token!)
 
-  const docPath = join(outputPath, 'doc')
-
-  const manifest: HfcManifest = JSON.parse(readFileSync(join(docPath, 'manifest.json'), 'utf-8'))
+  const manifest: HfcManifest = JSON.parse(readFileSync(join(outputPath, 'manifest.json'), 'utf-8'))
   form.append('manifest', JSON.stringify(manifest))
 
-  const docMd = readFileSync(join(docPath, 'index.md'), 'utf8')
-  if (Buffer.byteLength(docMd) > 1024 * 1024 * 2)
-    throw new Error('doc too large, max 2mb')
+  const docMd = readFileSync(join(hfcpackPath, 'hfc.md'), 'utf8')
+  if (Buffer.byteLength(docMd) > 1024 * 1024)
+    throw new Error('doc too large, max 1024kb')
 
   form.append('doc', docMd)
   form.append(
-    'prop-types.json',
-    fileFromSync(join(docPath, 'prop-types.json')),
+    'prop-types',
+    fileFromSync(join(hfcpackPath, 'props.hfc')),
   )
-  form.append('css-vars.json', fileFromSync(join(docPath, 'css-vars.json')))
+  form.append(
+    'prop-types.json',
+    fileFromSync(join(outputPath, 'prop-types.json')),
+  )
+  form.append(
+    'css-vars',
+    fileFromSync(join(hfcpackPath, 'vars.css')),
+  )
+  form.append('css-vars.json', fileFromSync(join(outputPath, 'css-vars.json')))
 
-  const imgFileNames = await fs.readdir(join(docPath, 'imgs'))
+  const imgsPath = join(hfcpackPath, 'imgs')
+  const imgFileNames = await fs.readdir(imgsPath)
   for (const imgFileName of imgFileNames) {
-    form.append(
-      'docImg',
-      fileFromSync(join(docPath, 'imgs', imgFileName)),
-      imgFileName,
-    )
+    if (docMd.includes(imgFileName)) {
+      form.append(
+        'docImg',
+        fileFromSync(join(imgsPath, imgFileName)),
+        imgFileName,
+      )
+    }
   }
 
   if (manifest.banner) {
     form.append(
       'banner',
-      fileFromSync(join(docPath, manifest.banner)),
+      fileFromSync(join(hfcpackPath, manifest.banner)),
       manifest.banner,
     )
   }
@@ -52,7 +62,7 @@ export async function publish({ token }: { token: string }) {
 
   const hfmPath = join(outputPath, 'hfm', manifest.name, manifest.version)
   form.append('hfm.js', fileFromSync(join(hfmPath, 'hfm.js')))
-  form.append('style.css', fileFromSync(join(hfmPath, 'style.css')))
+  form.append('hfm.css', fileFromSync(join(hfmPath, 'hfm.css')))
 
   const publishUrl
     = process.env.NODE_ENV === 'development'
@@ -60,24 +70,25 @@ export async function publish({ token }: { token: string }) {
       : 'https://api.hfc.hyper.fun/publish'
 
   try {
-    await fetch(publishUrl, {
+    const res = await fetch(publishUrl, {
       method: 'POST',
       body: form,
     })
-      .then(res => res.json())
-      .then((res: any) => {
-        if (res.err === 'OK') {
-          console.log(colors.green('publish success'))
-          return
-        }
+      .then(res => res.json() as unknown as { err: string; errmsg?: string })
 
-        if (res.errmsg) {
-          console.error(res.errmsg)
-          return
-        }
+    if (res.err === 'OK') {
+      console.log(
 
-        console.log('publish failed:', res)
-      })
+        colors.green('publish success'))
+      return
+    }
+
+    if (res.errmsg) {
+      console.error(res.errmsg)
+      return
+    }
+
+    console.log('publish failed:', res)
   }
   catch (error) {
     console.log('failed to publish, network error')

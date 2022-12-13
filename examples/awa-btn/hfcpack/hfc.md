@@ -26,7 +26,7 @@
 
 ***
 
-![](/imgs/cGDrVjXITc8K1q-KK1Cs0.png?w=300\&a=left)
+![](/imgs/CjR0TtFT5zc.png?_a=center&_w=300)
 
 ```hfz-view id=w6eqerrcirg
 <template hfz import:awa-btn="dev">
@@ -36,9 +36,10 @@
 ```
 
 ```hfz-view id=mcv12wjukw min-h=100
-console.log(2121);
-console.log(4);
-console.log(5);
+<div>
+  <h1>CUBE</h1>
+  <img src="/imgs/JD1XOfwO9lM.png" width="50" alt="" srcset="">
+</div>
 
 ```
 
@@ -105,4 +106,6 @@ function hi() {
 | :--- | :---- | :--- | :- | :- |
 | asdf | czva  | asef |    |    |
 | asef | asef  | asef |    |    |
+
+***
 

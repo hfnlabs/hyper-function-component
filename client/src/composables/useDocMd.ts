@@ -16,9 +16,6 @@ export const useDocMd = createGlobalState(
       if (res.err === 'OK')
         etag = res.etag
 
-      else if (res.err === 'ETAG_MISS_MATCH')
-        fetchDocMd()
-
       else
         location.reload()
     }

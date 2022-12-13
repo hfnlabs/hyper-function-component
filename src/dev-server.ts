@@ -19,7 +19,7 @@ import type { EsmBuilder } from './esm-builder.js'
 import type { PropsBuilder } from './hfc-props-builder'
 import type { ManifestBuilder } from './manifest-builder.js'
 import { HfcPropTypesParser } from './hfc-props-parser'
-import { ensureFileSync, readJsonSync, wirteJsonSync } from './utils.js'
+import { ensureFileSync, readJsonSync, wirteJsonSync, xxhash64 } from './utils.js'
 import type { CssVarBuilder } from './css-variable-builder.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -101,10 +101,6 @@ export class DevServer {
       }, event.node.req, event.node.res)
     }))
 
-    const latestDoc = {
-      etag: '',
-      content: '',
-    }
     this.router.get('/api/doc', eventHandler(() => {
       const docPath = path.join(this.config.hfcpackPath, 'hfc.md')
       ensureFileSync(docPath)
@@ -112,23 +108,98 @@ export class DevServer {
       const etag = `W/"${stats.size}-${stats.mtime.getTime()}"`
 
       const content = fs.readFileSync(docPath, 'utf-8')
-      latestDoc.etag = etag
-      latestDoc.content = content
-      return latestDoc
+
+      return { etag, content }
     }))
 
     this.router.post('/api/doc', eventHandler(async (event) => {
       const { etag, content } = await readBody<{ etag: string; content: string }>(event)
-      if (etag !== latestDoc.etag)
-        return { err: 'ETAG_MISS_MATCH' }
 
       const docPath = path.join(this.config.hfcpackPath, 'hfc.md')
-      fs.writeFileSync(docPath, content)
-      latestDoc.content = content
       const stats = fs.statSync(docPath)
-      latestDoc.etag = `W/"${stats.size}-${stats.mtime.getTime()}"`
+      const realEtag = `W/"${stats.size}-${stats.mtime.getTime()}"`
+      if (etag !== realEtag)
+        return { err: 'ETAG_MISS_MATCH' }
 
-      return { err: 'OK', etag: latestDoc.etag }
+      fs.writeFileSync(docPath, content)
+      const newStats = fs.statSync(docPath)
+      const newEtag = `W/"${newStats.size}-${newStats.mtime.getTime()}"`
+
+      return { err: 'OK', etag: newEtag }
+    }))
+
+    function getHfzViewCodeById(lines: string[], id: string) {
+      let startLineNum = Infinity
+      let endLineNum = 0
+      let backtick = ''
+      const codeLines = []
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+
+        if (
+          line.startsWith('```')
+          && line.includes('hfz-view')
+          && line.includes(`id=${id}`)
+        ) {
+          backtick = line.split('hfz-view')[0]
+          startLineNum = i
+          continue
+        }
+
+        if (i > startLineNum) {
+          if (line === backtick) {
+            endLineNum = i
+            break
+          }
+
+          codeLines.push(line)
+        }
+      }
+
+      return { start: startLineNum, end: endLineNum, codeLines, backtick }
+    }
+
+    this.router.get('/api/hfzView/code', eventHandler(async (event) => {
+      const query = getQuery(event)
+      const id = query.id as string
+
+      const docPath = path.join(this.config.hfcpackPath, 'hfc.md')
+      const content = fs.readFileSync(docPath, 'utf-8')
+      const lines = content.split('\n')
+
+      const { start, codeLines } = getHfzViewCodeById(lines, id)
+
+      if (start === Infinity)
+        return { err: 'NOT_FOUND' }
+
+      return { err: 'OK', code: codeLines.join('\n') }
+    }))
+
+    this.router.post('/api/hfzView/code', eventHandler(async (event) => {
+      const { id, code, prevCode } = await readBody<{ id: string; code: string; prevCode: string }>(event)
+
+      const docPath = path.join(this.config.hfcpackPath, 'hfc.md')
+      const content = fs.readFileSync(docPath, 'utf-8')
+
+      const lines = content.split('\n')
+
+      const { start, end, backtick, codeLines } = getHfzViewCodeById(lines, id)
+
+      if (start === Infinity)
+        return { err: 'NOT_FOUND' }
+
+      if (codeLines.join('\n') !== prevCode)
+        return { err: 'PREV_CODE_NOT_MATCH' }
+
+      const newBacktick = `${(code.match(/`{3,}/g) || ['``']).sort((a, b) => b.length - a.length)[0]}\``
+      const startLine = lines[start].replace(backtick, newBacktick)
+
+      const codeBlock = [startLine, code, newBacktick].join('\n')
+
+      lines.splice(start, end - start + 1, codeBlock)
+      fs.writeFileSync(docPath, lines.join('\n'))
+
+      return { err: 'OK' }
     }))
 
     this.router.get('/api/manifest', eventHandler(() => {
@@ -217,7 +288,7 @@ export class DevServer {
 
         const bufs: Uint8Array[] = []
         file.on('data', d => bufs.push(d))
-        file.on('end', () => {
+        file.on('end', async () => {
           const buf = Buffer.concat(bufs)
 
           if (buf.byteLength > 512 * 1024) {
@@ -225,7 +296,8 @@ export class DevServer {
             return
           }
 
-          const hash = createHash('sha256').update(buf).digest('base64url').slice(0, 21)
+          const hash = (await xxhash64(buf)).toString('base64url')
+
           const ext = mimeToExt[info.mimeType]
           const filename = `${hash}${ext}`
 

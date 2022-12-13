@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs'
 import path, { dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { build } from 'esbuild'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -13,8 +14,8 @@ export const defaultConfig = {
   bundle: true,
   entryPoints: [path.resolve(__dirname, 'src', 'index.ts')],
   format: 'esm',
-  outfile: path.resolve(__dirname, 'dist', 'hfcpack.js'),
-  external: ['vite', 'esbuild', 'postcss'],
+  outfile: path.resolve(__dirname, 'dist', 'index.js'),
+  external,
   platform: 'node',
   target: 'esnext',
   banner: {
@@ -22,8 +23,9 @@ export const defaultConfig = {
   },
 }
 
-function run() {
+async function run() {
   console.log('do prod build')
+  await build(defaultConfig)
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href)
