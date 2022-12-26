@@ -28,14 +28,14 @@
 
 ![](/imgs/CjR0TtFT5zc.png?_a=center&_w=300)
 
-```hfz-view id=w6eqerrcirg
+```hfz-view id=w6eqerrcirg&h=500
 <template hfz import:awa-btn="dev">
   <awa-btn></awa-btn>
 </template>
 
 ```
 
-```hfz-view id=mcv12wjukw min-h=100
+```hfz-view id=oruef3jj4r
 <div>
   <h1>CUBE</h1>
   <img src="/imgs/JD1XOfwO9lM.png" width="50" alt="" srcset="">

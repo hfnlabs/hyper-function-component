@@ -9,8 +9,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url("@fontsource/inter/files/inter-latin-400-normal.woff2")
-    format("woff2");
+  src: url("@fontsource/inter/files/inter-latin-400-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -18,8 +17,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 600;
-  src: url("@fontsource/inter/files/inter-latin-600-normal.woff2")
-    format("woff2");
+  src: url("@fontsource/inter/files/inter-latin-600-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -27,8 +25,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url("@fontsource/inter/files/inter-latin-700-normal.woff2")
-    format("woff2");
+  src: url("@fontsource/inter/files/inter-latin-700-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -36,8 +33,15 @@
   font-style: normal;
   font-display: swap;
   font-weight: 800;
-  src: url("@fontsource/inter/files/inter-latin-800-normal.woff2")
-    format("woff2");
+  src: url("@fontsource/inter/files/inter-latin-800-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fira Code";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/fira-code/files/fira-code-latin-400-normal.woff2") format("woff2");
 }
 
 .milkdown {
@@ -59,30 +63,25 @@
 }
 
 .no-img-bg {
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 10px,
-    #eef1f5 10px,
-    #eef1f5 calc(2 * 10px)
-  );
+  background: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      #eef1f5 10px,
+      #eef1f5 calc(2 * 10px));
+}
+
+body.dragging {
+  user-select: none;
 }
 
 body.dragging iframe {
   pointer-events: none;
 }
 
-body.dragging-row {
-  cursor: row-resize;
-}
-
-body.dragging-col {
-  cursor: col-resize;
-}
-
 .md-image .action-bar {
   opacity: 0;
 }
+
 .md-image:hover .action-bar {
   opacity: 100;
 }

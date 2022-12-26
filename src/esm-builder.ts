@@ -91,7 +91,7 @@ export class EsmBuilder extends EventEmitter {
     this.watcher = (await build(this.viteConfig)) as RollupWatcher
 
     // remove vite listener
-    this.watcher.removeAllListeners('event')
+    this.watcher.removeAllListeners()
 
     this.watcher.on('event', async (event) => {
       if (event.code === 'BUNDLE_START') {

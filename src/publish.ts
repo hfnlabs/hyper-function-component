@@ -74,21 +74,17 @@ export async function publish({ token }: { token: string }) {
       method: 'POST',
       body: form,
     })
-      .then(res => res.json() as unknown as { err: string; errmsg?: string })
+      .then(res => res.json() as unknown as {
+        error?: { code: string; message?: string }
+      })
 
-    if (res.err === 'OK') {
-      console.log(
-
-        colors.green('publish success'))
+    if (res.error) {
+      console.log(colors.red('publish failed:'))
+      console.error(res.error.message || res.error.code)
       return
     }
 
-    if (res.errmsg) {
-      console.error(res.errmsg)
-      return
-    }
-
-    console.log('publish failed:', res)
+    console.log(colors.green('publish success'))
   }
   catch (error) {
     console.log('failed to publish, network error')
