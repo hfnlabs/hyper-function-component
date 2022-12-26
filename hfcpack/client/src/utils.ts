@@ -1,4 +1,12 @@
-export function useSpliter(pos: 'top' | 'right' | 'bottom' | 'left', elem: HTMLDivElement, onChange: (offset: number) => void) {
+export function useResizer(
+  pos: 'top' | 'right' | 'bottom' | 'left',
+  elem: HTMLDivElement,
+  opts: {
+    onStart?: () => void
+    onMove?: (offset: number) => void
+    onEnd?: () => void
+  } = {},
+) {
   const isVertical = pos === 'left' || pos === 'right'
   const style: any = {
     position: 'absolute',
@@ -7,42 +15,38 @@ export function useSpliter(pos: 'top' | 'right' | 'bottom' | 'left', elem: HTMLD
     right: '0',
     bottom: '0',
     cursor: isVertical ? 'col-resize' : 'row-resize',
-    height: isVertical ? '100%' : '6px',
-    width: isVertical ? '6px' : '100%',
+    height: isVertical ? '100%' : '4px',
+    width: isVertical ? '4px' : '100%',
     zIndex: '1',
   }
 
   if (pos === 'top') {
     delete style.bottom
-    style.top = '-3px'
+    style.top = '-2px'
   }
-
   else if (pos === 'left') {
     delete style.right
-    style.left = '-3px'
+    style.left = '-2px'
   }
-
   else if (pos === 'right') {
     delete style.left
-    style.right = '-3px'
+    style.right = '-2px'
   }
-
   else if (pos === 'bottom') {
     delete style.top
-    style.bottom = '-3px'
+    style.bottom = '-2px'
   }
 
   Object.assign(elem.style, style)
 
-  let dragging = false
-  let startPos = 0
-  let offset = 0
-
   function onDragStart(e: MouseEvent) {
-    dragging = true
     document.body.classList.add('dragging')
-    document.body.classList.add(isVertical ? 'dragging-col' : 'dragging-row')
-    startPos = (isVertical ? e.x : e.y) - offset
+    document.body.style.cursor = isVertical ? 'col-resize' : 'row-resize'
+
+    let offset = 0
+    let dragging = true
+    const startPos = isVertical ? e.x : e.y
+    opts.onStart?.()
 
     function onDragMove(e: MouseEvent) {
       if (!dragging)
@@ -51,16 +55,17 @@ export function useSpliter(pos: 'top' | 'right' | 'bottom' | 'left', elem: HTMLD
       const currentPos = isVertical ? e.x : e.y
       offset = currentPos - startPos
 
-      onChange(offset)
+      opts.onMove?.(offset)
     }
 
     function onDragEnd() {
       dragging = false
       document.body.classList.remove('dragging')
-      document.body.classList.remove(isVertical ? 'dragging-col' : 'dragging-row')
+      document.body.style.cursor = 'auto'
       document.removeEventListener('mousemove', onDragMove)
       document.removeEventListener('mouseup', onDragMove)
       document.removeEventListener('mouseleave', onDragMove)
+      opts.onEnd?.()
     }
 
     document.addEventListener('mousemove', onDragMove)

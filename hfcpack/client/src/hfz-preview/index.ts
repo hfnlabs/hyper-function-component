@@ -2,7 +2,7 @@ import 'iframe-resizer/js/iframeResizer.contentWindow.min.js'
 import { useDebounceFn } from '@vueuse/core'
 import * as Vue from 'vue'
 import { listenBuildEvents } from '../build-event-listener'
-import { useSpliter } from '@/utils'
+import { useResizer } from '@/utils'
 
 (<any>window).Vue = Vue
 
@@ -18,14 +18,16 @@ const version = url.searchParams.get('version')
 
 function parseCode(code: string) {
   const parsedCode = code.replace(
-    new RegExp(`import:${name}="dev`, 'g'),
-    `import:${name}="${version}`,
+    new RegExp(`import:${name}="dev"`, 'g'),
+    `import:${name}="${version}"`,
   )
 
   return parsedCode
 }
 
 const hfzContainer = document.getElementById('hfz-app')!
+const hfzEditorContainer = document.getElementById('hfz-editor')!
+
 function renderCode() {
   document.title = name!;
 
@@ -85,30 +87,34 @@ async function saveCode(newCode: string) {
 
 const editorPos: 'left' | 'bottom' = 'left'
 function showEditorContainer() {
-  const container = document.getElementById('hfz-editor')!
   const spliterElem = document.createElement('div')
 
-  container.appendChild(spliterElem)
+  hfzEditorContainer.appendChild(spliterElem)
 
-  const size = editorPos === 'left' ? window.innerWidth / 3 : window.innerHeight / 4
+  let size = editorPos === 'left' ? window.innerWidth / 3 : window.innerHeight / 4
 
   function resizeEditor(offset: number) {
     if (editorPos === 'left') {
-      container.style.right = 'auto'
-      container.style.width = `${size + offset}px`
+      hfzEditorContainer.style.right = 'auto'
+      hfzEditorContainer.style.width = `${size + offset}px`
       hfzContainer.style.marginLeft = `${size + offset}px`
     }
 
     else {
-      container.style.top = 'auto'
-      container.style.height = `${size - offset}px`
+      hfzEditorContainer.style.top = 'auto'
+      hfzEditorContainer.style.height = `${size - offset}px`
       hfzContainer.style.marginBottom = `${size - offset}px`
     }
   }
   resizeEditor(0)
 
-  useSpliter(editorPos === 'left' ? 'right' : 'top', spliterElem, (offset) => {
-    resizeEditor(offset)
+  useResizer(editorPos === 'left' ? 'right' : 'top', spliterElem, {
+    onStart() {
+      size = editorPos === 'left' ? parseInt(getComputedStyle(hfzEditorContainer).width) : parseInt(getComputedStyle(hfzEditorContainer).height)
+    },
+    onMove(offset) {
+      resizeEditor(offset)
+    },
   })
 }
 
@@ -129,8 +135,7 @@ function showEditor() {
       onChangeCode(event.data.data)
   })
 
-  const container = document.getElementById('hfz-editor')!
-  container.appendChild(editorFrame)
+  hfzEditorContainer.appendChild(editorFrame)
 }
 
 async function renderCodeWithId() {

@@ -11,18 +11,18 @@ import type { ResolvedConfig } from './config.js'
 import { ensureFileSync } from './utils.js'
 
 function generateSharedNpmBuildScript(name: string) {
-  let script = `
-    const shared = (window.$HFC_SHARE_DEP = window.$HFC_SHARE_DEP || {});
-    import * as m from "${name}";
-    if (!shared["${name}"]) shared["${name}"] = m;
-  `
+  let script = `\
+const shared = (window.$HFC_SHARE_DEP = window.$HFC_SHARE_DEP || {});
+import * as m from "${name}";
+if (!shared["${name}"]) shared["${name}"] = m;
+`
 
   // special case for react-dom, which must bundle with react
   if (name === 'react') {
-    script += `
-      import * as m1 from "react-dom";
-      if (!shared["react-dom"]) shared["react-dom"] = m1;
-    `
+    script += `\
+import * as m1 from "react-dom";
+if (!shared["react-dom"]) shared["react-dom"] = m1;
+`
   }
 
   return script
@@ -155,50 +155,50 @@ export class HfmBuilder extends EventEmitter {
   buildWrap() {
     return {
       start: `\
-    (function () {
-      const currentUrl = document.currentScript.src;
+(function () {
+  const currentUrl = document.currentScript.src;
 
-      $HFC_LOAD_CSS(currentUrl.replace("hfm.js", "hfm.css"));
+  $HFC_LOAD_CSS(currentUrl.replace("hfm.js", "hfm.css"));
 
-      const deps = ${JSON.stringify(
-        this.sharedDeps.map(dep => ({
-          name: dep.name,
-          ver: dep.ver,
-          rv: dep.rv,
-        })),
-      )};
-      const shared = (window.$HFC_SHARE_DEP = window.$HFC_SHARE_DEP || {});
+  const deps = ${JSON.stringify(
+    this.sharedDeps.map(dep => ({
+        name: dep.name,
+        ver: dep.ver,
+        rv: dep.rv,
+      })),
+    )};
+  const shared = (window.$HFC_SHARE_DEP = window.$HFC_SHARE_DEP || {});
 
-      const hfmBaseUrl = currentUrl.split("hfm/")[0];
-      function init() {
-        return Promise.all(
-          deps.map((dep) => {
-            if (shared[dep.name]) return;
-            return $HFC_LOAD_JS(
-              hfmBaseUrl + "hfm/share/" + dep.name + "@" + dep.ver + ".js"
-            );
-          })
-        ).then(initHfc);
-      }
+  const hfmBaseUrl = currentUrl.split("hfm/")[0];
+  function init() {
+    return Promise.all(
+      deps.map((dep) => {
+        if (shared[dep.name]) return;
+        return $HFC_LOAD_JS(
+          hfmBaseUrl + "hfm/share/" + dep.name + "@" + dep.ver + ".js"
+        );
+      })
+    ).then(initHfc);
+  }
 
-      window.$HFC_ITEMS = window.$HFC_ITEMS || {};
-      function get(name) {
-        return () => Promise.resolve(name === "./hfc" ? window.$HFC_ITEMS["${
-          this.config.hfcName
-        }"] : undefined);
-      }
+  window.$HFC_ITEMS = window.$HFC_ITEMS || {};
+  function get(name) {
+    return () => Promise.resolve(name === "./hfc" ? window.$HFC_ITEMS["${
+      this.config.hfcName
+    }"] : undefined);
+  }
 
-      window.$HFC_CONTAINERS = window.$HFC_CONTAINERS || {};
-      window.$HFC_CONTAINERS["${
-        this.config.hfcName
-      }"] = { get: get, init: init, deps: deps };
+  window.$HFC_CONTAINERS = window.$HFC_CONTAINERS || {};
+  window.$HFC_CONTAINERS["${
+    this.config.hfcName
+  }"] = { get: get, init: init, deps: deps };
 
-      function initHfc() {
-    `,
+  function initHfc() {
+  `,
       end: `
-      }
-    })();
-      `,
+  }
+})();
+`,
     }
   }
 

@@ -3,26 +3,20 @@ import type { Editor } from '@milkdown/core'
 import { defaultValueCtx, editorViewCtx, rootCtx, serializerCtx } from '@milkdown/core'
 import { listenerCtx } from '@milkdown/plugin-listener'
 import { createApp, ref, watch } from 'vue'
-// @ts-expect-error no types from this pkg
-import { iframeResize } from 'iframe-resizer'
-import { useDebounceFn, useThrottleFn } from '@vueuse/core'
 import { replaceAll } from '@milkdown/utils'
 import { refractor } from 'refractor'
 import { toHtml } from 'hast-util-to-html'
 import { createMilkdownEditor } from '../milkdown'
 import type { HfzViewCode } from '../milkdown/hfz-view'
+import HfzView from './HfzView.vue'
 import { useDocMd } from '@/composables/useDocMd'
 import { useManifest } from '@/composables/useManifest'
 import { useBuildEvent } from '@/composables/useBuildEvent'
-import { useSpliter } from '@/utils'
-
-import HfzPreviewActionBar from '@/components/HfzPreviewActionBar.vue'
 
 const { manifest } = useManifest()
 const { docMd, updateDocMd } = useDocMd()
 
 const codeMap: HfzViewCode = new Map()
-const sandboxMap: Map<string, HTMLIFrameElement> = new Map()
 
 const milkdownEditor = ref<Editor>()
 function saveMd() {
@@ -56,18 +50,6 @@ watch(() => docMd.value, async () => {
   milkdownEditor.value = editor
 })
 
-const { buildEvent } = useBuildEvent()
-watch(() => buildEvent.value, () => {
-  if (buildEvent.value.action === 'rebuild-complete')
-    reloadAllHfzView()
-})
-
-function reloadAllHfzView() {
-  sandboxMap.forEach((sandbox) => {
-    (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
-  })
-}
-
 function renderHfzView(id: string, container: HTMLDivElement) {
   const { name, version } = manifest.value!
 
@@ -80,124 +62,28 @@ function renderHfzView(id: string, container: HTMLDivElement) {
 `
   }
 
-  const sandboxContainer = document.createElement('div')
-  sandboxContainer.style.position = 'relative'
-  sandboxContainer.style.borderRadius = '4px'
-  sandboxContainer.style.boxShadow = '0 0 0 1.2px #ebecf0'
+  container.classList.add('hfz-view')
 
-  const sandbox = document.createElement('iframe')
-  sandbox.style.borderRadius = '4px'
-  sandboxMap.set(id, sandbox)
-
-  sandbox.setAttribute(
-    'sandbox',
-    [
-      'allow-same-origin',
-      'allow-popups',
-      'allow-modals',
-      'allow-forms',
-      'allow-pointer-lock',
-      'allow-scripts',
-      'allow-top-navigation-by-user-activation',
-    ].join(' '),
-  )
-
-  let sandboxHeight = code.minHeight || 60
-  const query = new URLSearchParams()
-  query.set('id', id)
-  query.set('name', name)
-  query.set('version', version)
-  sandbox.src = `/hfz-preview.html?${query.toString()}`
-  sandboxContainer.appendChild(sandbox)
-
-  const bottomSpliterElem = document.createElement('div')
-  sandboxContainer.appendChild(bottomSpliterElem)
-  useSpliter('bottom', bottomSpliterElem, useThrottleFn((offset: number) => {
-    const height = sandboxHeight + offset
-    sandbox.style.height = `${height}px`
-  }, 10))
-
-  let containerWidth = 0
-  const rightSpliterElem = document.createElement('div')
-  sandboxContainer.appendChild(rightSpliterElem)
-  useSpliter('right', rightSpliterElem, useThrottleFn((offset: number) => {
-    if (!containerWidth)
-      containerWidth = parseInt(getComputedStyle(sandboxContainer).width)
-
-    sandboxContainer.style.width = `${containerWidth + offset}px`
-  }, 10))
-
-  container.appendChild(sandboxContainer)
-
-  iframeResize(
-    {
-      log: false,
-      sizeHeight: false,
-      checkOrigin: false,
-      minHeight: sandboxHeight,
-      heightCalculationMethod: 'grow',
-      onInit() {
-        (sandbox as any).iFrameResizer.sendMessage({
-          action: 'render',
-          data: {
-            code: code.value,
-          },
-        })
-      },
-      onResized(res: any) {
-        if (res.height < 60)
-          return
-        sandboxHeight = parseInt(res.height)
-        sandbox.style.height = `${sandboxHeight}px`
-      },
-      onMessage: ({ message }: { message: { action: string; data: any } }) => {
-
-      },
+  createApp(HfzView, {
+    id,
+    codeMap,
+    onChangeCode(id: string, newCode: string) {
+      saveMd()
     },
-    sandbox,
-  )
+    onDelete(id: string) {
+      milkdownEditor.value!.action((ctx) => {
+        const editorView = ctx.get(editorViewCtx)
 
-  const actionContainer = document.createElement('div')
-  actionContainer.style.position = 'relative'
-  const actionBar = document.createElement('div')
-  actionBar.classList.add('action-bar')
-  actionContainer.appendChild(actionBar)
-  container.appendChild(actionContainer)
-
-  let actionBarMounted = false
-  container.onmouseenter = () => {
-    if (actionBarMounted)
-      return
-
-    actionBarMounted = true
-
-    createApp(HfzPreviewActionBar, {
-      onClickOpen() {
-        window.open(`/hfz-preview.html?${query.toString()}`, '_blank')
-      },
-      onClickEdit() {
-        showMonacoEditor()
-      },
-      onClickReload() {
-        (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
-      },
-      onClickDelete() {
-        sandboxMap.delete(id)
-        sandbox.remove()
-        milkdownEditor.value!.action((ctx) => {
-          const editorView = ctx.get(editorViewCtx)
-
-          editorView.state.doc.forEach((node, offset) => {
-            if (node.type.name === 'hfz_view' && node.attrs.id === id) {
-              editorView.dispatch(
-                editorView.state.tr.delete(offset, offset + node.nodeSize),
-              )
-            }
-          })
+        editorView.state.doc.forEach((node, offset) => {
+          if (node.type.name === 'hfz_view' && node.attrs.id === id) {
+            editorView.dispatch(
+              editorView.state.tr.delete(offset, offset + node.nodeSize),
+            )
+          }
         })
-      },
-    }).mount(actionBar)
-  }
+      })
+    },
+  }).mount(container)
 
   const codeContainer = document.createElement('div')
   codeContainer.style.position = 'relative'
@@ -225,37 +111,6 @@ function renderHfzView(id: string, container: HTMLDivElement) {
     codeContainer.appendChild(pre)
   }
   showHighlightCode()
-
-  function showMonacoEditor() {
-    const editorFrame = document.createElement('iframe')
-    editorFrame.style.margin = '1em 0'
-    editorFrame.style.height = '400px'
-    editorFrame.style.borderRadius = '4px'
-
-    const frameId = Math.random().toString(36).substring(2)
-    editorFrame.src = `/hfz-preview-editor.html?id=${frameId}&code=${encodeURIComponent(code.value)}`
-
-    const onCodeChange = useDebounceFn(() => {
-      (sandbox as any).iFrameResizer.sendMessage({ action: 'reload' })
-      saveMd()
-    }, 250)
-
-    window.addEventListener('message', (event) => {
-      if (event.data.from !== 'embedEditor' && event.data.id !== frameId)
-        return
-
-      if (event.data.action === 'changeCode') {
-        const code = codeMap.get(id)
-        code!.value = event.data.data
-        codeMap.set(id, code!)
-
-        onCodeChange()
-      }
-    })
-
-    codeContainer.innerHTML = ''
-    codeContainer.appendChild(editorFrame)
-  }
 
   container.append(codeContainer)
 }
@@ -424,7 +279,6 @@ function renderCodeCollapse(elem: HTMLPreElement) {
 .hfz-view iframe {
   width: 100%;
   border: none;
-  /* transition: height 300ms ease; */
   height: 60px;
   background: white;
 }

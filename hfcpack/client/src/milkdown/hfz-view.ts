@@ -65,15 +65,13 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         runner: (state, node, type) => {
           const value = node.value as string
 
-          const metaArr = ((node.meta as string) || '').split(' ')
           const code = { id: '', value, minHeight: DEFAULT_MIN_HEIGHT }
-          for (const meta of metaArr) {
-            const [k, v] = meta.split('=')
-            if (k === 'id')
-              code.id = v
-            else if (k === 'min-h')
-              code.minHeight = parseInt(v)
-          }
+
+          const params = new URLSearchParams(node.meta as string || '')
+          if (params.has('id'))
+            code.id = params.get('id')!
+          if (params.has('h'))
+            code.minHeight = parseInt(params.get('h')!)
 
           if (!code.id)
             code.id = genId()
@@ -88,14 +86,16 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         match: node => node.type.name === 'hfz_view',
         runner: (state, node) => {
           const code = codeMap.get(node.attrs.id)!
-          const metas = [`id=${code.id}`]
+
+          const params = new URLSearchParams()
+          params.set('id', code.id)
 
           if (code.minHeight && code.minHeight !== DEFAULT_MIN_HEIGHT)
-            metas.push(`min-h=${code.minHeight}`)
+            params.set('h', code.minHeight.toString())
 
           state.addNode('code', undefined, code.value, {
             lang: 'hfz-view',
-            meta: metas.join(' '),
+            meta: params.toString(),
           })
         },
       },
