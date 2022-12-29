@@ -2,7 +2,6 @@ import path, { dirname } from 'path'
 import type { ServerResponse } from 'http'
 import { createServer } from 'http'
 import { fileURLToPath } from 'url'
-import { createHash } from 'crypto'
 import fs from 'fs'
 import cors from 'cors'
 import sirv from 'sirv'
@@ -215,10 +214,18 @@ export class DevServer {
 
     this.router.post('/api/manifest', eventHandler(async (event) => {
       const { key, value } = await readBody<{ key: string; value: any }>(event)
-      if (key === 'banner')
-        updatePackageJson({ banner: value })
 
-      await this.builders.manifestBuilder.build()
+      if (key === 'name') {
+        updatePackageJson({ name: value })
+        await this.builders.manifestBuilder.build()
+        await this.builders.esmBuilder.build()
+      }
+
+      if (key === 'banner') {
+        updatePackageJson({ banner: value })
+        await this.builders.manifestBuilder.build()
+      }
+
       return { err: 'OK' }
     }))
 

@@ -29,7 +29,7 @@ export class ManifestBuilder extends EventEmitter {
       throw new Error('keywords too lang, max total 256 char')
 
     const manifest: HfcManifest = {
-      name: this.config.hfcName,
+      name: this.config.name,
       version: this.config.version,
       banner,
       homepage,

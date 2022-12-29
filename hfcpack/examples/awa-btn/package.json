@@ -1,6 +1,5 @@
 {
-  "hfcName": "awa-btn",
-  "name": "awesome-hfc",
+  "name": "awa-btn",
   "version": "1.2.27",
   "description": "awesome button",
   "homepage": "",
@@ -27,9 +26,6 @@
   },
   "devDependencies": {
     "hfcpack": "../../"
-  },
-  "hfc": {
-    "name": "awa-btn"
   },
   "banner": "/imgs/CjR0TtFT5zc.png"
 }

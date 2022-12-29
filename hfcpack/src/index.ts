@@ -1,2 +1,3 @@
-export { runCli } from './cli'
+export * from './cli'
+export * from './config'
 export * from './service'

@@ -41,7 +41,6 @@ export type ResolvedConfig = HfcConfig & {
   license: string
   keywords: string[]
   description: string
-  hfcName: string
   context: string
   command: 'serve' | 'build'
   cssVars: CssVar[]
@@ -198,11 +197,10 @@ export async function resolveConfig(
     description,
     rollupOptions,
     deps,
-    name: packageJson.name,
-    port: Number(process.env.PORT) || Number(config.port) || 8787,
-    hfcName: process.env.HFC_NAME || packageJson.hfc.name,
+    name: process.env.HFC_NAME || packageJson.name,
     version: process.env.HFC_VERSION || packageJson.version,
     license: process.env.HFC_LICENSE || packageJson.license || '',
+    port: Number(process.env.PORT) || Number(config.port) || 8787,
     outputPath,
     hfcpackPath,
     pkgJsonPath,

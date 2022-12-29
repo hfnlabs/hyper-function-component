@@ -82,7 +82,7 @@ export class EsmBuilder extends EventEmitter {
     }
 
     hfcEnv['process.env.HFC_PROP_NAMES'] = process.env.HFC_PROP_NAMES
-    hfcEnv['process.env.HFC_NAME'] = JSON.stringify(this.config.hfcName)
+    hfcEnv['process.env.HFC_NAME'] = JSON.stringify(this.config.name)
     hfcEnv['process.env.HFC_VERSION'] = JSON.stringify(this.config.version)
 
     this.viteConfig.define = hfcEnv

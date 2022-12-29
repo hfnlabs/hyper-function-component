@@ -24,7 +24,7 @@ watch(activeTab, (value) => {
     <div class="mx-4 md:mx-8 md:pr-[332px] relative">
       <div>
         <HeaderInfo
-          :active-tab="activeTab" :name="manifest.name" :desc="manifest.description"
+          :active-tab="activeTab"
           @change-tab="activeTab = $event.name"
         />
         <div>

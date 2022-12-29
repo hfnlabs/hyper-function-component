@@ -8,19 +8,11 @@ import { ManifestBuilder } from './manifest-builder.js'
 import { DevServer } from './dev-server.js'
 import type {
   ResolvedConfig,
-  UserConfigExport,
 } from './config.js'
 import {
-  defineHfcPackConfig,
   resolveConfig,
 } from './config.js'
 import { CssVarBuilder } from './css-variable-builder.js'
-
-declare global {
-  function defineHfcPackConfig(config: UserConfigExport): UserConfigExport
-}
-
-globalThis.defineHfcPackConfig = defineHfcPackConfig
 
 export class Service extends EventEmitter {
   config!: ResolvedConfig

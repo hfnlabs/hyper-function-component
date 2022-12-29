@@ -119,38 +119,3 @@ async function runPublish({ token, skipBuild }: { token?: string; skipBuild?: bo
 
   service.run()
 }
-
-function verifyHfcName(input: string) {
-  const ref = '\nref: https://bit.ly/3QzRS7S'
-
-  if (input.length > 64)
-    return 'name is too long (max 64 characters)'
-
-  if (!input.includes('-'))
-    return `name must contain a '-' \nlike awesome-button ${ref}`
-
-  if (/[^a-z]/.test(input[0]))
-    return `first character must be [a-z] ${ref}`
-
-  if (/[^a-z0-9]/.test(input[input.length - 1]))
-    return 'last character must be [a-z] [0-9] '
-
-  if (/[^a-z0-9\-]/.test(input))
-    return 'invalid name, valid character is [a-z] [0-9] and -'
-
-  if (
-    [
-      'annotation-xml',
-      'color-profile',
-      'font-face',
-      'font-face-src',
-      'font-face-uri',
-      'font-face-format',
-      'font-face-name',
-      'missing-glyph',
-    ].includes(input)
-  )
-    return `${input} is reveresd ${ref}`
-
-  return true
-}

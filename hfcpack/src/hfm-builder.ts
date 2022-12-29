@@ -38,7 +38,7 @@ export class HfmBuilder extends EventEmitter {
     super()
     this.outDir = path.resolve(
       this.config.hfmOutputPath,
-      this.config.hfcName,
+      this.config.name,
       this.config.version,
     )
     this.mode = config.command === 'build' ? 'production' : 'development'
@@ -51,7 +51,7 @@ export class HfmBuilder extends EventEmitter {
       [
         'import "../pkg/hfc.css";',
         'import HFC from "../pkg/hfc.js";',
-        `window.$HFC_ITEMS["${this.config.hfcName}"] = HFC;`,
+        `window.$HFC_ITEMS["${this.config.name}"] = HFC;`,
         '',
       ].join('\n'),
     )
@@ -184,13 +184,13 @@ export class HfmBuilder extends EventEmitter {
   window.$HFC_ITEMS = window.$HFC_ITEMS || {};
   function get(name) {
     return () => Promise.resolve(name === "./hfc" ? window.$HFC_ITEMS["${
-      this.config.hfcName
+      this.config.name
     }"] : undefined);
   }
 
   window.$HFC_CONTAINERS = window.$HFC_CONTAINERS || {};
   window.$HFC_CONTAINERS["${
-    this.config.hfcName
+    this.config.name
   }"] = { get: get, init: init, deps: deps };
 
   function initHfc() {

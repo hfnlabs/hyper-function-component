@@ -1,11 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import esbuild from 'esbuild'
-import type { HtmlTagDescriptor, Plugin, ResolvedConfig } from 'vite'
+import { buildSync } from 'esbuild'
+import type { HtmlTagDescriptor, Plugin } from 'vite'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwind from 'tailwindcss'
-import { ensureFileSync } from './src/utils'
 
 const root = path.resolve(__dirname, 'client')
 export default defineConfig(({ mode }) => {
@@ -16,7 +15,7 @@ export default defineConfig(({ mode }) => {
     appType: 'mpa',
     plugins: [
       vue(),
-      monacoEditorPlugin(path.resolve(__dirname, 'node_modules')),
+      monaco(),
     ],
     resolve: {
       alias: {
@@ -58,8 +57,8 @@ export default defineConfig(({ mode }) => {
   }
 })
 
-function monacoEditorPlugin(nodeModulesPath: string): Plugin {
-  const languageWorks = {
+function monaco(): Plugin {
+  const languageWorkers = {
     editorWorkerService: {
       entry: 'monaco-editor/esm/vs/editor/editor.worker',
       urlPath: '/monacoworkers/editor.worker.js',
@@ -82,53 +81,28 @@ function monacoEditorPlugin(nodeModulesPath: string): Plugin {
     },
   }
 
-  const cacheDir = path.join(nodeModulesPath, '.monaco-workers')
+  for (const worker of Object.values(languageWorkers)) {
+    const workerPath = path.join(root, 'public', worker.urlPath)
 
-  function writeWorkerFilesToCache() {
-    for (const worker of Object.values(languageWorks)) {
-      const workerCachePath = path.join(cacheDir, worker.urlPath)
+    if (!fs.existsSync(workerPath)) {
+      const entryPoint = path.resolve(__dirname, 'node_modules', worker.entry)
 
-      if (!fs.existsSync(workerCachePath)) {
-        const entryPoint = path.resolve(nodeModulesPath, worker.entry)
-
-        esbuild.buildSync({
-          entryPoints: [entryPoint],
-          bundle: true,
-          minify: true,
-          outfile: workerCachePath,
-          legalComments: 'none',
-        })
-      }
+      buildSync({
+        entryPoints: [entryPoint],
+        bundle: true,
+        minify: true,
+        outfile: workerPath,
+        legalComments: 'none',
+      })
     }
   }
 
-  let resolvedConfig: ResolvedConfig
+  // let resolvedConfig: ResolvedConfig
   return {
     name: 'vite-plugin-monaco',
-    configResolved(getResolvedConfig) {
-      resolvedConfig = getResolvedConfig
-    },
-    configureServer(server) {
-      writeWorkerFilesToCache()
-
-      for (const worker of Object.values(languageWorks)) {
-        server.middlewares.use(worker.urlPath, (req, res) => {
-          const contentBuffer = fs.readFileSync(
-            path.join(cacheDir, worker.urlPath),
-          )
-          res.setHeader('Content-Type', 'text/javascript')
-          res.end(contentBuffer)
-        })
-      }
-    },
-    writeBundle() {
-      writeWorkerFilesToCache()
-      for (const worker of Object.values(languageWorks)) {
-        const dist = path.join(resolvedConfig.build.outDir, worker.urlPath)
-        ensureFileSync(dist)
-        fs.copyFileSync(path.join(cacheDir, worker.urlPath), dist)
-      }
-    },
+    // configResolved(getResolvedConfig) {
+    //   resolvedConfig = getResolvedConfig
+    // },
     transformIndexHtml() {
       const globals = {
         MonacoEnvironment: `(function (paths) {
@@ -140,14 +114,14 @@ function monacoEditorPlugin(nodeModulesPath: string): Plugin {
             }
           };
         })(${JSON.stringify({
-          editorWorkerService: languageWorks.editorWorkerService.urlPath,
-          typescript: languageWorks.typescript.urlPath,
-          javascript: languageWorks.typescript.urlPath,
-          css: languageWorks.css.urlPath,
-          less: languageWorks.css.urlPath,
-          scss: languageWorks.css.urlPath,
-          html: languageWorks.html.urlPath,
-          json: languageWorks.html.urlPath,
+          editorWorkerService: languageWorkers.editorWorkerService.urlPath,
+          typescript: languageWorkers.typescript.urlPath,
+          javascript: languageWorkers.typescript.urlPath,
+          css: languageWorkers.css.urlPath,
+          less: languageWorkers.css.urlPath,
+          scss: languageWorkers.css.urlPath,
+          html: languageWorkers.html.urlPath,
+          json: languageWorkers.html.urlPath,
         })})`,
       }
 
