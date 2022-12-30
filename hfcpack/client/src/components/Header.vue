@@ -19,8 +19,9 @@ function changeTab(name: string) {
   emit('changeTab', { name })
 }
 
-const showNameDialog = ref(manifest.value?.name === 'demo-hfc')
-const inputName = ref(manifest.value!.name)
+const HFC_INIT_NAME = 'demo-hfc'
+const showNameDialog = ref(manifest.value?.name === HFC_INIT_NAME)
+const inputName = ref(manifest.value!.name === HFC_INIT_NAME ? '' : manifest.value!.name)
 const inputNameValidateError = ref('')
 const inputNameValid = computed(() => !!inputName.value && !inputNameValidateError.value)
 
@@ -48,6 +49,7 @@ function checkHfcName(input: string) {
 
   if (
     [
+      'demo-hfc',
       'annotation-xml',
       'color-profile',
       'font-face',
@@ -67,8 +69,10 @@ async function saveName() {
   if (!inputNameValid.value)
     return
 
-  if (inputName.value === manifest.value?.name)
+  if (inputName.value === manifest.value?.name) {
+    showNameDialog.value = false
     return
+  }
 
   await updateManifest('name', inputName.value)
 

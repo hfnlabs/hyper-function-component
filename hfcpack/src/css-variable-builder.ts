@@ -10,7 +10,11 @@ export class CssVarBuilder extends EventEmitter {
   }
 
   async build(content?: string) {
-    const css = content || fs.readFileSync(this.config.cssVarsPath)
+    const css = content || fs.readFileSync(this.config.cssVarsPath, 'utf-8')
+    if (!css) {
+      this.emit('build-complete')
+      return
+    }
 
     const parsed = postcss.parse(css)
 

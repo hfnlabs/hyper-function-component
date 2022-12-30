@@ -12,15 +12,12 @@ export class ManifestBuilder extends EventEmitter {
 
     const banner = process.env.HFC_BANNER || pkg.banner
     const homepage = process.env.HFC_HOMEPAGE || pkg.homepage
-    const description = process.env.HFC_DESCRIPTION || pkg.description
+    const description = process.env.HFC_DESCRIPTION || pkg.description || ''
     const repository = process.env.HFC_REPOSITORY || pkg.repository
     const license = process.env.HFC_LICENSE || pkg.license
     let keywords = pkg.keywords || []
     if (process.env.HFC_KEYWORDS)
       keywords = process.env.HFC_KEYWORDS.split(',')
-
-    if (!description)
-      throw new Error('description is required in package.json')
 
     if (description.length > 256)
       throw new Error('description too lang, max 256 char')
