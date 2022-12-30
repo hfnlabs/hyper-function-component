@@ -1,7 +1,0 @@
-# ➜ https://hyper-function.com/hfc/create-hfc/prop-types
-
-type Attrs {}
-
-type Events {}
-
-type Slots {}
