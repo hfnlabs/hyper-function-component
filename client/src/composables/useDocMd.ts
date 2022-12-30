@@ -8,7 +8,7 @@ export const useDocMd = createGlobalState(
     async function fetchDocMd() {
       const res = await fetch('/api/doc').then(res => res.json())
       etag = res.etag
-      docMd.value = { content: res.content }
+      docMd.value = { content: res.content || 'Introduce your awesome HFC' }
     }
 
     async function updateDocMd(content: string) {

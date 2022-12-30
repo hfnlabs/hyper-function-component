@@ -3,7 +3,7 @@ import path from 'path'
 import EventEmitter from 'events'
 import fs from 'fs/promises'
 import { existsSync, writeFileSync } from 'fs'
-import type { InlineConfig } from 'vite'
+import type { InlineConfig, LibraryOptions } from 'vite'
 import { build } from 'vite'
 import esbuild from 'esbuild'
 import type { OutputOptions } from 'rollup'
@@ -30,32 +30,15 @@ if (!shared["react-dom"]) shared["react-dom"] = m1;
 
 export class HfmBuilder extends EventEmitter {
   mode: 'production' | 'development'
-  outDir: string
   viteConfig!: InlineConfig
   sharedDeps: { npm: string; name: string; ver: string; rv: string }[] = []
   externals: string[] = []
   constructor(private config: ResolvedConfig) {
     super()
-    this.outDir = path.resolve(
-      this.config.hfmOutputPath,
-      this.config.name,
-      this.config.version,
-    )
     this.mode = config.command === 'build' ? 'production' : 'development'
   }
 
   async resolveConfig() {
-    const entry = path.join(this.config.hfmOutputPath, 'entry.js')
-    writeFileSync(
-      entry,
-      [
-        'import "../pkg/hfc.css";',
-        'import HFC from "../pkg/hfc.js";',
-        `window.$HFC_ITEMS["${this.config.name}"] = HFC;`,
-        '',
-      ].join('\n'),
-    )
-
     await this.buildSharedNpmPkg()
 
     this.viteConfig = {
@@ -74,7 +57,7 @@ export class HfmBuilder extends EventEmitter {
         reportCompressedSize: false,
         lib: {
           name: 'hfmExport',
-          entry,
+          entry: '',
           formats: ['iife'],
           fileName: () => 'hfm.js',
         },
@@ -90,7 +73,6 @@ export class HfmBuilder extends EventEmitter {
             chunkFileNames: '[name].js',
           },
         },
-        outDir: this.outDir,
         emptyOutDir: false,
         minify: this.config.command === 'build',
       },
@@ -203,6 +185,25 @@ export class HfmBuilder extends EventEmitter {
   }
 
   async build() {
+    const outDir = path.resolve(
+      this.config.hfmOutputPath,
+      this.config.name,
+      this.config.version,
+    )
+    this.viteConfig.build!.outDir = outDir
+
+    const entry = path.join(this.config.hfmOutputPath, 'entry.js')
+    writeFileSync(
+      entry,
+      [
+        'import "../pkg/hfc.css";',
+        'import HFC from "../pkg/hfc.js";',
+        `window.$HFC_ITEMS["${this.config.name}"] = HFC;`,
+        '',
+      ].join('\n'),
+    )
+    ;(this.viteConfig.build!.lib as LibraryOptions)!.entry = entry
+
     const wrapCode = this.buildWrap()
     const output = this.viteConfig.build!.rollupOptions!
       .output! as OutputOptions
@@ -218,9 +219,9 @@ ${this.config.cssVars.map(item => `  ${item.name}: ${item.value};`).join('\n')}
 }
 `
 
-    const styleContent = await fs.readFile(path.join(this.outDir, 'style.css'), 'utf-8')
+    const styleContent = await fs.readFile(path.join(outDir, 'style.css'), 'utf-8')
 
-    await fs.writeFile(path.join(this.outDir, 'hfm.css'), cssVars + styleContent)
+    await fs.writeFile(path.join(outDir, 'hfm.css'), cssVars + styleContent)
 
     this.emit('build-complete')
   }

@@ -49,7 +49,7 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         const viewDom = document.createElement('div')
         const viewId = node.attrs.id
         viewDom.id = `hfz-view-${viewId}`
-        viewDom.classList.add('hfz-view', 'mb-10', 'mt-5')
+        viewDom.classList.add('hfz-view', 'my-5')
         onMount(viewId, viewDom)
         dom.appendChild(viewDom)
 

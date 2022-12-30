@@ -1,6 +1,6 @@
 {
   "name": "hfcpack",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,6 +8,10 @@
   "bin": {
     "hfcpack": "./cli.js"
   },
+  "files": [
+    "dist/**/*",
+    "cli.js"
+  ],
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && npm run build:cli && npm run build:client",

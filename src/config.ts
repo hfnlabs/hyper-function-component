@@ -2,7 +2,7 @@ import path from 'path'
 import { pathToFileURL } from 'url'
 import fs from 'fs/promises'
 import type { BuildOptions, UserConfig } from 'vite'
-import { readJson } from './utils'
+import { ensureFileSync, readJson } from './utils'
 
 export interface ConfigEnv {
   command: 'build' | 'serve'
@@ -116,6 +116,8 @@ export async function resolveConfig(
       fs.mkdir(p, { recursive: true }),
     ),
   )
+
+  ;[cssVarsPath, propTypesPath].forEach(p => ensureFileSync(p))
 
   const deps: ResolvedConfig['deps'] = {}
   const rollupOptions: BuildOptions['rollupOptions']

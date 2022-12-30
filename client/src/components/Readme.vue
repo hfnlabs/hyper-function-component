@@ -11,7 +11,6 @@ import type { HfzViewCode } from '../milkdown/hfz-view'
 import HfzView from './HfzView.vue'
 import { useDocMd } from '@/composables/useDocMd'
 import { useManifest } from '@/composables/useManifest'
-import { useBuildEvent } from '@/composables/useBuildEvent'
 
 const { manifest } = useManifest()
 const { docMd, updateDocMd } = useDocMd()

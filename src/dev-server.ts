@@ -9,7 +9,7 @@ import colors from 'picocolors'
 import prettyBytes from 'pretty-bytes'
 import Busboy from 'busboy'
 import type { App, Router } from 'h3'
-import { callNodeListener, createApp, createRouter, eventHandler, fromNodeMiddleware, getQuery, readBody, send, toNodeListener } from 'h3'
+import { callNodeListener, createApp, createRouter, eventHandler, fromNodeMiddleware, getQuery, readBody, toNodeListener } from 'h3'
 
 import bundleSize from './bundle-size.js'
 import type { ResolvedConfig } from './config.js'
@@ -83,7 +83,8 @@ export class DevServer {
 
           const nextMsg = this.buildEventMsgs[msgIndex + 1]
           if (nextMsg) {
-            send(event, nextMsg)
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify(nextMsg))
             return
           }
         }
@@ -216,7 +217,9 @@ export class DevServer {
       const { key, value } = await readBody<{ key: string; value: any }>(event)
 
       if (key === 'name') {
+        this.config.name = value
         updatePackageJson({ name: value })
+
         await this.builders.manifestBuilder.build()
         await this.builders.esmBuilder.build()
       }
