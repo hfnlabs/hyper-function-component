@@ -1,8 +1,5 @@
 {
-  "hfc": {
-    "name": ""
-  },
-  "name": "awesome-hfc",
+  "name": "demo-hfc",
   "version": "1.0.0",
   "license": "MIT",
   "description": "",
@@ -22,8 +19,6 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.4.0",
-    "@types/hyper-function-component": "^2.1.0",
-    "@types/react": "^17.0.39",
-    "hfcpack": "^1.0.11"
+    "hfcpack": "^2.0.2"
   }
 }

@@ -1,11 +1,8 @@
 {
-  "hfc": {
-    "name": ""
-  },
-  "name": "awesome-hfc",
+  "name": "demo-hfc",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "",
+  "description": "awesome hfc",
   "homepage": "",
   "repository": "",
   "keywords": [],
@@ -17,7 +14,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@types/hyper-function-component": "^2.1.0",
-    "hfcpack": "^1.0.11"
+    "hfcpack": "^2.0.2"
   }
 }
