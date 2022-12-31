@@ -2,7 +2,7 @@
   "name": "demo-hfc",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "",
+  "description": "awesome hfc",
   "homepage": "",
   "repository": "",
   "keywords": [],
@@ -18,7 +18,7 @@
     "preact-to-hfc": "^1.0.1"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.4.0",
+    "@preact/preset-vite": "^2.5.0",
     "hfcpack": "^2.0.3"
   }
 }
