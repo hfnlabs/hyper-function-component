@@ -90,6 +90,7 @@ function showEditorContainer() {
   const spliterElem = document.createElement('div')
 
   hfzEditorContainer.appendChild(spliterElem)
+  hfzEditorContainer.style.display = 'block'
 
   let size = editorPos === 'left' ? window.innerWidth / 3 : window.innerHeight / 4
 

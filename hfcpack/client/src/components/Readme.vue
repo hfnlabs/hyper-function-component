@@ -160,6 +160,9 @@ function renderCodeCollapse(elem: HTMLPreElement) {
 </template>
 
 <style>
+.milkdown {
+  min-height: 500px;
+}
 .prose li p {
   margin: 0;
 }
