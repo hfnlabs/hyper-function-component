@@ -19,6 +19,6 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.4.0",
-    "hfcpack": "^2.0.2"
+    "hfcpack": "^2.0.3"
   }
 }
