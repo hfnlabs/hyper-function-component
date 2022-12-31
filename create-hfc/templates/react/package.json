@@ -2,7 +2,7 @@
   "name": "demo-hfc",
   "version": "1.0.0",
   "license": "MIT",
-  "description": "",
+  "description": "awesome hfc",
   "homepage": "",
   "repository": "",
   "keywords": [],
@@ -19,7 +19,8 @@
     "react-to-hfc": "^1.2.7"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^2.1.0",
-    "hfcpack": "^2.0.3"
+    "@vitejs/plugin-react": "^3.0.0",
+    "hfcpack": "^2.0.3",
+    "vite": "^4.0.3"
   }
 }
