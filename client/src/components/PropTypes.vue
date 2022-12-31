@@ -15,7 +15,7 @@ const onChangeCode = useDebounceFn(async (code: string) => {
   const checkRes = await checkPropTypes(code)
   const { editor } = monacoApi!.value!
   editor.removeAllMarkers('hfcpack')
-  propEditor.value!.classList.remove('ring-4', 'ring-red-500', 'ring-yellow-500')
+  propEditor.value!.classList.remove('ring-2', 'ring-red-500', 'ring-yellow-500')
 
   if (checkRes.err === 'OK') {
     typePos.value = checkRes.typePos
@@ -42,7 +42,7 @@ const onChangeCode = useDebounceFn(async (code: string) => {
         unkonwTypeMarkers,
       )
 
-      propEditor.value!.classList.add('ring-4', 'ring-yellow-500')
+      propEditor.value!.classList.add('ring-2', 'ring-yellow-500')
     }
     else {
       updatePropTypes(code)
@@ -62,7 +62,7 @@ const onChangeCode = useDebounceFn(async (code: string) => {
         severity: monacoApi.value!.MarkerSeverity.Error,
       }],
     )
-    propEditor.value!.classList.add('ring-4', 'ring-red-600')
+    propEditor.value!.classList.add('ring-2', 'ring-red-600')
   }
   else {
     console.log('Unknown Error')
