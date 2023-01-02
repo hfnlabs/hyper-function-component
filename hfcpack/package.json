@@ -1,6 +1,6 @@
 {
   "name": "hfcpack",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -75,8 +75,6 @@
     "hast-util-to-html": "^8.0.3",
     "hfc-props-parser": "^1.0.0",
     "iframe-resizer": "^4.3.2",
-    "micromark": "^3.1.0",
-    "micromark-extension-gfm": "^2.0.1",
     "monaco-editor": "^0.34.1",
     "node-fetch": "^3.3.0",
     "picocolors": "^1.0.0",
