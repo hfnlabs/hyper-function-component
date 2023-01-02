@@ -77,7 +77,7 @@ function toggleEdit() {
   }, 250)
 
   window.addEventListener('message', (event) => {
-    if (event.data.from !== 'embedEditor' && event.data.id !== frameId)
+    if (event.data.from !== 'embedEditor' || event.data.id !== frameId)
       return
 
     if (event.data.action === 'changeCode')
