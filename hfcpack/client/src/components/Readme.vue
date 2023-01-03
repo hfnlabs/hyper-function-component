@@ -258,30 +258,4 @@ function renderCodeCollapse(elem: HTMLPreElement) {
 .prose .md-image img {
   margin: 0;
 }
-
-.hfz-view {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  padding-bottom: 5px;
-}
-
-.hfz-view .action-bar {
-  opacity: 0;
-  position: absolute;
-  top: 18px;
-  right: 9px;
-  z-index: 1;
-}
-
-.hfz-view:hover .action-bar {
-  opacity: 100;
-}
-
-.hfz-view iframe {
-  width: 100%;
-  border: none;
-  height: 60px;
-  background: white;
-}
 </style>

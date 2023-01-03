@@ -150,14 +150,14 @@ function setupResizer() {
 </script>
 
 <template>
-  <div ref="previewContainer" class="relative flex flex-col rounded" style="box-shadow: 0 0 0 1px #ebecf0;">
+  <div ref="previewContainer" class="preview relative flex flex-col rounded">
     <div class="flex-1">
       <iframe
         ref="sandbox" class="rounded-t"
         sandbox="allow-same-origin allow-popups allow-modals allow-forms allow-pointer-lock allow-scripts allow-top-navigation-by-user-activation"
       />
     </div>
-    <div class="flex overflow-hidden rounded-b bg-slate-50">
+    <div class="action-bar flex overflow-hidden rounded-b bg-slate-50">
       <button
         class="flex items-center justify-center p-2 text-slate-500 h-9 w-9 hover:text-slate-900" title="Reload"
         @click="onReload"
@@ -212,3 +212,26 @@ function setupResizer() {
 
   <div ref="hfzEditorContainer" />
 </template>
+
+<style>
+.hfz-view:hover .preview {
+  box-shadow: 0 0 0 1px #ebecf0;
+  transition: box-shadow 0.1s ease-in-out;
+}
+
+.action-bar {
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+}
+
+.hfz-view:hover .action-bar {
+  opacity: 1;
+}
+
+.hfz-view iframe {
+  width: 100%;
+  border: none;
+  height: 60px;
+  background: white;
+}
+</style>
