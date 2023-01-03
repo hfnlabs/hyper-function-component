@@ -22,7 +22,7 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "@vitejs/plugin-react": "^3.0.0",
-    "hfcpack": "^2.0.4",
+    "hfcpack": "^2.0.5",
     "vite": "^4.0.3"
   }
 }
