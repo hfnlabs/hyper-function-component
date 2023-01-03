@@ -28,7 +28,10 @@ onMounted(async () => {
     await initMonaco()
     monacoApi.value = monaco
     const editor = createEditor(cssEditor.value!, {
-      'value': cssVars.value,
+      'value': cssVars.value || `\
+:root {
+  
+}`,
       'language': 'css',
       'theme': 'vs-dark',
       'contextmenu': false,

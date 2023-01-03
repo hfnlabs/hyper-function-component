@@ -32,9 +32,12 @@
 <template hfz import:awa-btn="dev">
   <awa-btn></awa-btn>
   <button class="a">bb</button>
+
   <style>
-  .a {color: red}
-</style>
+    .a {
+      color: blue;
+    }
+  </style>
 </template>
 
 ```

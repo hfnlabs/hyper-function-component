@@ -63,11 +63,41 @@ function renderHfzView(id: string, container: HTMLDivElement) {
 
   container.classList.add('hfz-view')
 
+  const codeContainer = document.createElement('div')
+  codeContainer.style.position = 'relative'
+  codeContainer.style.borderRadius = '4px'
+  codeContainer.style.overflow = 'hidden'
+
+  const pre = document.createElement('pre')
+  pre.style.margin = '1em 0'
+  pre.style.maxHeight = '400px'
+  pre.style.overflowY = 'hidden'
+
+  const codeHighlightBlock = document.createElement('code')
+  codeHighlightBlock.classList.add('language-hfz')
+
+  const showHighlightCode = () => {
+    const tree = refractor.highlight(code.value, 'html')
+    codeHighlightBlock.innerHTML = toHtml(tree)
+  }
+
+  showHighlightCode()
+
+  pre.appendChild(codeHighlightBlock)
+
+  setTimeout(() => {
+    renderCodeCollapse(pre)
+  }, 0)
+
+  codeContainer.innerHTML = ''
+  codeContainer.appendChild(pre)
+
   createApp(HfzView, {
     id,
     codeMap,
     onChangeCode(id: string, newCode: string) {
       saveMd()
+      showHighlightCode()
     },
     onDelete(id: string) {
       milkdownEditor.value!.action((ctx) => {
@@ -83,34 +113,6 @@ function renderHfzView(id: string, container: HTMLDivElement) {
       })
     },
   }).mount(container)
-
-  const codeContainer = document.createElement('div')
-  codeContainer.style.position = 'relative'
-  codeContainer.style.borderRadius = '4px'
-  codeContainer.style.overflow = 'hidden'
-
-  function showHighlightCode() {
-    const pre = document.createElement('pre')
-    pre.style.margin = '1em 0'
-    pre.style.maxHeight = '400px'
-    pre.style.overflowY = 'hidden'
-
-    const codeHighlightBlock = document.createElement('code')
-    codeHighlightBlock.classList.add('language-hfz')
-    const tree = refractor.highlight(code.value, 'html')
-    codeHighlightBlock.innerHTML = toHtml(tree)
-
-    pre.appendChild(codeHighlightBlock)
-
-    setTimeout(() => {
-      renderCodeCollapse(pre)
-    }, 0)
-
-    codeContainer.innerHTML = ''
-    codeContainer.appendChild(pre)
-  }
-  showHighlightCode()
-
   container.append(codeContainer)
 }
 
