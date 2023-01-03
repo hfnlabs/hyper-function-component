@@ -51,7 +51,7 @@
 function hi() {
   if (a > 0) {
     console.log({a: 1, b: '2' });
-	console.log('asefjsklejfklsef')
+	console.log('asefjsklejfklsef');
   }
 }
 ```
