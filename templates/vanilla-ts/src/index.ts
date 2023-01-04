@@ -1,6 +1,6 @@
 import "./index.css";
 
-const HFC: HyperFunctionComponent = (container, props) => {
+const HFC: HyperFunctionComponent = (container, initProps) => {
   container.innerHTML = `
       <h1>
         <div>THIS COMPONENT</div>

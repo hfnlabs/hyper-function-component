@@ -23,7 +23,7 @@ console.log("updating version to", version);
       packageJson.devDependencies["hfcpack"] = "^" + version;
       fs.writeFileSync(packageFile, JSON.stringify(packageJson, null, 2));
 
-      execSync("npm i --package-lock-only", { cwd: dir });
+      // execSync("npm i --package-lock-only", { cwd: dir });
     })
   );
 

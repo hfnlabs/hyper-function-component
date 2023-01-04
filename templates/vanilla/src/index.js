@@ -1,6 +1,6 @@
 import "./index.css";
 
-const HFC = (container, props) => {
+const HFC = (container, initProps) => {
   container.innerHTML = `
       <h1>
         <div>THIS COMPONENT</div>
