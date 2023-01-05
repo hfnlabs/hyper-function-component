@@ -2,7 +2,8 @@
   "name": "awa-btn",
   "version": "1.2.27",
   "description": "awesome button",
-  "homepage": "",
+  "homepage": "https://github.com/hfnlabs/hfcpack",
+  "repository": "https://github.com/hfnlabs/hfcpack.git",
   "type": "module",
   "scripts": {
     "start": "hfcpack",

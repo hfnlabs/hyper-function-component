@@ -219,7 +219,7 @@ function setupResizer() {
   transition: box-shadow 0.1s ease-in-out;
 }
 
-.action-bar {
+.hfz-view .action-bar {
   opacity: 0;
   transition: opacity 0.1s ease-in-out;
 }
