@@ -7,6 +7,7 @@ const org = "hfnlabs";
 const repos = [
   { name: "create-hfc", prefix: "create-hfc" },
   { name: "hfcpack", prefix: "hfcpack" },
+  { name: "hfc-cli", prefix: "hfc-cli" },
 ];
 
 (async () => {
