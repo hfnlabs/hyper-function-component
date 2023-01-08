@@ -10,6 +10,7 @@ export type HfzViewCode = Map<string, {
   id: string
   value: string
   minHeight: number
+  darkMode: boolean
 }>
 
 interface HfzViewOpts {
@@ -65,13 +66,15 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         runner: (state, node, type) => {
           const value = node.value as string
 
-          const code = { id: '', value, minHeight: DEFAULT_MIN_HEIGHT }
+          const code = { id: '', value, minHeight: DEFAULT_MIN_HEIGHT, darkMode: false }
 
           const params = new URLSearchParams(node.meta as string || '')
           if (params.has('id'))
             code.id = params.get('id')!
           if (params.has('h'))
             code.minHeight = parseInt(params.get('h')!)
+          if (params.has('dark'))
+            code.darkMode = true
 
           if (!code.id)
             code.id = genId()
@@ -93,6 +96,9 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
           if (code.minHeight && code.minHeight !== DEFAULT_MIN_HEIGHT)
             params.set('h', code.minHeight.toString())
 
+          if (code.darkMode)
+            params.set('dark', '1')
+
           state.addNode('code', undefined, code.value, {
             lang: 'hfz-view',
             meta: params.toString(),
@@ -107,6 +113,7 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
           id,
           value: '',
           minHeight: DEFAULT_MIN_HEIGHT,
+          darkMode: false,
         })
 
         return setBlockType(nodeType, { id })

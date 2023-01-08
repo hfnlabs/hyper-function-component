@@ -59,7 +59,7 @@ function showBannerImagePicker() {
       class="flex mb-4 rounded-md cursor-pointer aspect-video no-img-bg"
       @click="showBannerImagePicker"
     >
-      <img v-if="manifest.banner" :src="manifest.banner" class="w-full rounded-md">
+      <img v-if="manifest.banner" :src="manifest.banner" class="w-full rounded-md object-cover">
     </div>
     <div class="mb-4">
       <div class="py-1 font-semibold text-gray-500">

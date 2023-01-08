@@ -4,7 +4,7 @@ import { buildSync } from 'esbuild'
 import type { HtmlTagDescriptor, Plugin } from 'vite'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import tailwind from 'tailwindcss'
+import tailwindcss from 'tailwindcss'
 
 const root = path.resolve(__dirname, 'client')
 export default defineConfig(({ mode }) => {
@@ -25,11 +25,9 @@ export default defineConfig(({ mode }) => {
     },
     css: {
       postcss: {
-        plugins: [
-          tailwind({
-            config: path.resolve(__dirname, 'tailwind.config.cjs'),
-          }),
-        ],
+        plugins: [tailwindcss({
+          config: path.resolve(__dirname, 'tailwind.config.cjs'),
+        })],
       },
     },
     clearScreen: false,
@@ -50,9 +48,6 @@ export default defineConfig(({ mode }) => {
           previewEditor: `${root}/hfz-preview-editor.html`,
         },
       },
-    },
-    server: {
-      hmr: false,
     },
   }
 })

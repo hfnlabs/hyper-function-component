@@ -21,9 +21,6 @@ const url = new URL(location.href);
     lineNumbers: 'off',
     glyphMargin: false,
     folding: true,
-    // Undocumented see https://github.com/Microsoft/vscode/issues/30795#issuecomment-410998882
-    // 'lineDecorationsWidth': 0,
-    // 'lineNumbersMinChars': 0,
     minimap: {
       enabled: false,
     },

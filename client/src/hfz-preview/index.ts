@@ -156,6 +156,13 @@ async function renderCodeWithId() {
   }, 300)
 }
 
+function setDarkMode(darkMode: boolean) {
+  if (darkMode)
+    document.documentElement.classList.add('dark')
+  else
+    document.documentElement.classList.remove('dark')
+}
+
 if (!isEmbed) {
   showEditorContainer()
   renderCodeWithId()
@@ -175,6 +182,9 @@ else {
 
       if (msg.action === 'reload')
         location.reload()
+
+      if (msg.action === 'setDarkMode')
+        setDarkMode(msg.data.darkMode)
     },
   }
 }

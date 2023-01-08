@@ -28,10 +28,10 @@
 
 ![](/imgs/CjR0TtFT5zc.png?_a=center&_w=300)
 
-```hfz-view id=w6eqerrcirg&h=500
+```hfz-view id=w6eqerrcirg&h=500&dark=1
 <template hfz import:awa-btn="dev">
   <awa-btn></awa-btn>
-  <button class="a">bb</button>
+  <button class="a">bbab</button>
 
   <style>
     .a {
