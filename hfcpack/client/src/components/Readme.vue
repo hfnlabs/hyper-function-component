@@ -4,8 +4,6 @@ import { defaultValueCtx, editorViewCtx, rootCtx, serializerCtx } from '@milkdow
 import { listenerCtx } from '@milkdown/plugin-listener'
 import { createApp, ref, watch } from 'vue'
 import { replaceAll } from '@milkdown/utils'
-import { refractor } from 'refractor'
-import { toHtml } from 'hast-util-to-html'
 import { createMilkdownEditor } from '../milkdown'
 import type { HfzViewCode } from '../milkdown/hfz-view'
 import HfzView from './HfzView.vue'
@@ -63,41 +61,11 @@ function renderHfzView(id: string, container: HTMLDivElement) {
 
   container.classList.add('hfz-view')
 
-  const codeContainer = document.createElement('div')
-  codeContainer.style.position = 'relative'
-  codeContainer.style.borderRadius = '4px'
-  codeContainer.style.overflow = 'hidden'
-
-  const pre = document.createElement('pre')
-  pre.style.margin = '1em 0'
-  pre.style.maxHeight = '400px'
-  pre.style.overflowY = 'hidden'
-
-  const codeHighlightBlock = document.createElement('code')
-  codeHighlightBlock.classList.add('language-hfz')
-
-  const showHighlightCode = () => {
-    const tree = refractor.highlight(code.value, 'html')
-    codeHighlightBlock.innerHTML = toHtml(tree)
-  }
-
-  showHighlightCode()
-
-  pre.appendChild(codeHighlightBlock)
-
-  setTimeout(() => {
-    renderCodeCollapse(pre)
-  }, 0)
-
-  codeContainer.innerHTML = ''
-  codeContainer.appendChild(pre)
-
   createApp(HfzView, {
     id,
     codeMap,
-    onChangeCode(id: string, newCode: string) {
+    onChangeCode(id: string) {
       saveMd()
-      showHighlightCode()
     },
     onDelete(id: string) {
       milkdownEditor.value!.action((ctx) => {
@@ -113,47 +81,6 @@ function renderHfzView(id: string, container: HTMLDivElement) {
       })
     },
   }).mount(container)
-  container.append(codeContainer)
-}
-
-function renderCodeCollapse(elem: HTMLPreElement) {
-  const height = parseInt(getComputedStyle(elem).height)
-  if (height < 400)
-    return
-
-  const collapse = document.createElement('template')
-  collapse.innerHTML = `
-      <div
-        class="absolute bottom-0 left-0 right-0 flex flex-col"
-      >
-        <div id="mask" style="height: 90px; background: linear-gradient(transparent, var(--tw-prose-pre-bg))" ></div>
-        <div
-          id="btn"
-          style="background-color: var(--tw-prose-pre-bg)"
-          class="flex justify-center items-center h-9 text-gray-400 hover:text-gray-200 cursor-pointer select-none"
-        >
-        </div>
-      </div>
-    `
-
-  const mask = collapse.content.getElementById('mask')!
-  mask.removeAttribute('id')
-
-  const openSvg = '<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z"/></svg></span>'
-  const closeSvg = '<svg width="24" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" d="m12 8l-6 6l1.41 1.41L12 10.83l4.59 4.58L18 14z"/></svg>'
-  const btn = collapse.content.getElementById('btn')!
-  btn.removeAttribute('id')
-  btn.innerHTML = openSvg
-
-  let isOpen = false
-  btn.addEventListener('click', () => {
-    isOpen = !isOpen
-    elem.style.maxHeight = isOpen ? 'none' : '400px'
-    mask.style.display = isOpen ? 'none' : 'block'
-    btn.innerHTML = isOpen ? closeSvg : openSvg
-  })
-
-  elem.appendChild(collapse.content)
 }
 </script>
 

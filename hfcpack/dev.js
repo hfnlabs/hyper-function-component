@@ -14,7 +14,6 @@ const VITE_DEV_PORT = 8181
 const viteDevServer = await createViteServer({
   configFile: path.resolve(__dirname, 'vite.config.js'),
   server: {
-    hmr: false,
     proxy: {
       '^/(api|imgs|hfm)': `http://localhost:${VITE_DEV_PORT + 1}`,
     },

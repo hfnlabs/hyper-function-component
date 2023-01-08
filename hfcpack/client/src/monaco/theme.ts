@@ -3,7 +3,7 @@
 
 // This satisfies the contract of IRawTheme as defined in vscode-textmate.
 export default {
-  name: 'AyuLight',
+  name: 'vs-dark',
   settings: [
     {
       settings: {
