@@ -20,7 +20,6 @@ const props = defineProps<{
 const { manifest } = useManifest()
 
 const code = props.codeMap.get(props.id)!
-const codeText = ref(code.value)
 const darkMode = ref(code.darkMode)
 const showEditor = ref(false)
 
@@ -52,7 +51,7 @@ function highlightCode() {
   if (!codeHighlightContainer.value)
     return
 
-  const tree = refractor.highlight(codeText.value, 'html')
+  const tree = refractor.highlight(code.value, 'html')
   codeHighlightContainer.value.innerHTML = toHtml(tree)
   setTimeout(() => {
     renderCodeCollapse(codeHighlightContainer.value!.parentElement!)
@@ -92,11 +91,10 @@ function toggleEdit() {
     editorFrame.style.borderBottomRightRadius = '4px'
 
     const frameId = Math.random().toString(36).substring(2)
-    editorFrame.src = `/hfz-preview-editor.html?id=${frameId}&code=${encodeURIComponent(codeText.value)}`
+    editorFrame.src = `/hfz-preview-editor.html?id=${frameId}&code=${encodeURIComponent(code.value)}`
 
     const onCodeChange = useDebounceFn((newCode: string) => {
       code.value = newCode
-      codeText.value = newCode
       sendMessageToSandbox({ action: 'reload' })
 
       props.onChangeCode(props.id)
@@ -147,6 +145,33 @@ function toggleViewportWidth() {
   previewContainer.value!.style.width = viewportWidth
 }
 
+function changeMinHeight() {
+  const initHeight = code.minHeight === 0 ? '' : code.minHeight.toString()
+  const minHeightStr = prompt('Viewport Min Height', initHeight)
+  if (minHeightStr === null)
+    return
+
+  const minHeight = parseInt(minHeightStr)
+
+  if (!minHeight) {
+    code.minHeight = 0
+    props.onChangeCode(props.id)
+
+    sendMessageToSandbox({ action: 'reload' })
+    return
+  }
+
+  if (minHeight < 60) {
+    alert('Min Height must be greater than 60')
+    return
+  }
+
+  code.minHeight = minHeight
+  props.onChangeCode(props.id)
+
+  sandbox.value!.style.height = `${minHeight}px`
+}
+
 function setupSandbox() {
   let sandboxHeight = code.minHeight || 60
   sandbox.value!.src = previewUrl.toString()
@@ -169,7 +194,7 @@ function setupSandbox() {
         sendMessageToSandbox({
           action: 'render',
           data: {
-            code: codeText.value,
+            code: code.value,
           },
         })
       },
@@ -327,6 +352,13 @@ function renderCodeCollapse(pre: HTMLElement) {
       </button>
 
       <button
+        class="flex items-center justify-center p-2 h-9 w-9 text-slate-300 hover:text-slate-100"
+        title="Change Min Height" @click="changeMinHeight"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" preserveAspectRatio="xMidYMid meet" viewBox="0 0 20 20"><path fill="currentColor" d="m15.003 4.498l.71.735A.75.75 0 0 0 16.79 4.19l-1.82-1.886a1 1 0 0 0-1.44 0L11.71 4.19a.75.75 0 0 0 1.079 1.042l.713-.739V7.25a.75.75 0 0 0 1.5 0V4.498ZM3 5a2 2 0 0 1 2-2h4.25a.75.75 0 0 1 0 1.5H5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h4.25a.75.75 0 0 1 0 1.5H5a2 2 0 0 1-2-2V5Zm12.712 9.767l-.71.735V12.75a.75.75 0 1 0-1.5 0v2.756l-.713-.739a.75.75 0 0 0-1.079 1.042l1.821 1.886a1 1 0 0 0 1.44 0l1.82-1.886a.75.75 0 0 0-1.079-1.042Z" /></svg>
+      </button>
+
+      <button
         class="flex items-center justify-center p-2 h-9 w-9 text-slate-300 hover:text-slate-100" title="Delete"
         @click="onDelete"
       >
@@ -361,7 +393,7 @@ function renderCodeCollapse(pre: HTMLElement) {
 </template>
 
 <style>
-.hfz-view .preview {
+.hfz-view:hover .preview {
   box-shadow: 0 0 0 1px #ebecf0;
 }
 
