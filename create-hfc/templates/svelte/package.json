@@ -19,6 +19,6 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.7",
-    "hfcpack": "^2.0.8"
+    "hfcpack": "^2.0.10"
   }
 }

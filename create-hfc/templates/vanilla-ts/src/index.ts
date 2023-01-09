@@ -1,3 +1,8 @@
+import type {
+  HyperFunctionComponent,
+  HfcProps,
+} from "hyper-function-component";
+
 import "./index.css";
 
 const HFC: HyperFunctionComponent = (container, initProps) => {
@@ -16,7 +21,7 @@ const HFC: HyperFunctionComponent = (container, initProps) => {
         </div>
       </h1>`;
 
-  return { changed(props: HfcProps) {}, disconnected() {} };
+  return { changed(props) {}, disconnected() {} };
 };
 
 HFC.tag = "div";
