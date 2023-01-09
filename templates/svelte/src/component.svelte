@@ -16,6 +16,7 @@
 
 <style>
   h1 {
+    margin: 8px 0;
     line-height: 48px;
     font-family: tahoma;
   }
