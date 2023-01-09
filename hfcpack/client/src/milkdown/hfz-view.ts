@@ -19,8 +19,6 @@ interface HfzViewOpts {
   [key: string]: any
 }
 
-const DEFAULT_MIN_HEIGHT = 60
-
 export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
   const codeMap = opts!.codeMap!
   const onMount = opts!.onMount!
@@ -66,7 +64,7 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         runner: (state, node, type) => {
           const value = node.value as string
 
-          const code = { id: '', value, minHeight: DEFAULT_MIN_HEIGHT, darkMode: false }
+          const code = { id: '', value, minHeight: 0, darkMode: false }
 
           const params = new URLSearchParams(node.meta as string || '')
           if (params.has('id'))
@@ -93,7 +91,7 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
           const params = new URLSearchParams()
           params.set('id', code.id)
 
-          if (code.minHeight && code.minHeight !== DEFAULT_MIN_HEIGHT)
+          if (code.minHeight)
             params.set('h', code.minHeight.toString())
 
           if (code.darkMode)
@@ -112,7 +110,7 @@ export const hfzView = createNode<'HfzView', HfzViewOpts>((_, opts) => {
         codeMap.set(id, {
           id,
           value: '',
-          minHeight: DEFAULT_MIN_HEIGHT,
+          minHeight: 0,
           darkMode: false,
         })
 
