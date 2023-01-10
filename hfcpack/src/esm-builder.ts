@@ -36,10 +36,10 @@ export class EsmBuilder extends EventEmitter {
   constructor(private config: ResolvedConfig) {
     super()
 
-    ensureFileSync(path.join(config.pkgOutputPath, 'hfc.css'))
-
     this.distHfcJsPath = path.join(config.pkgOutputPath, 'hfc.js')
     this.distHfcCssPath = path.join(config.pkgOutputPath, 'hfc.css')
+
+    ensureFileSync(this.distHfcCssPath)
 
     this.viteConfig = {
       mode: 'production',

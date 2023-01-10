@@ -30,12 +30,16 @@ if (!shared["react-dom"]) shared["react-dom"] = m1;
 
 export class HfmBuilder extends EventEmitter {
   mode: 'production' | 'development'
+  outDir!: string
   viteConfig!: InlineConfig
   sharedDeps: { npm: string; name: string; ver: string; rv: string }[] = []
   externals: string[] = []
   constructor(private config: ResolvedConfig) {
     super()
     this.mode = config.command === 'build' ? 'production' : 'development'
+
+    this.resolveOutDir()
+    ensureFileSync(path.join(this.outDir, 'style.css'))
   }
 
   async resolveConfig() {
@@ -184,13 +188,17 @@ export class HfmBuilder extends EventEmitter {
     }
   }
 
-  async build() {
-    const outDir = path.resolve(
+  resolveOutDir() {
+    this.outDir = path.resolve(
       this.config.hfmOutputPath,
       this.config.name,
       this.config.version,
     )
-    this.viteConfig.build!.outDir = outDir
+  }
+
+  async build() {
+    this.resolveOutDir()
+    this.viteConfig.build!.outDir = this.outDir
 
     const entry = path.join(this.config.hfmOutputPath, 'entry.js')
     writeFileSync(
@@ -219,9 +227,9 @@ ${this.config.cssVars.map(item => `  ${item.name}: ${item.value};`).join('\n')}
 }
 `
 
-    const styleContent = await fs.readFile(path.join(outDir, 'style.css'), 'utf-8')
+    const styleContent = await fs.readFile(path.join(this.outDir, 'style.css'), 'utf-8')
 
-    await fs.writeFile(path.join(outDir, 'hfm.css'), cssVars + styleContent)
+    await fs.writeFile(path.join(this.outDir, 'hfm.css'), cssVars + styleContent)
 
     this.emit('build-complete')
   }

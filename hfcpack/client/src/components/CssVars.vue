@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue'
 import type { editor } from 'monaco-editor'
 import { useDebounceFn } from '@vueuse/core'
 import { useCssVars } from '@/composables/useCssVars'
-import { Toast } from '@/components/Toast'
 
 type MonacoApi = typeof import('monaco-editor/esm/vs/editor/editor.api')
 const monacoApi = ref<MonacoApi>()
@@ -22,16 +21,19 @@ const onChangeCode = useDebounceFn(async (code: string) => {
 
 function setupMonaco(monaco: MonacoApi) {}
 
+const INIT_VALUE = `\
+:root {
+  
+}
+`
+
 onMounted(async () => {
   await fetchCssVars()
   import('../monaco').then(async ({ monaco, initMonaco, createEditor }) => {
     await initMonaco()
     monacoApi.value = monaco
     const editor = createEditor(cssEditor.value!, {
-      'value': cssVars.value || `\
-:root {
-  
-}`,
+      'value': cssVars.value || INIT_VALUE,
       'language': 'css',
       'theme': 'vs-dark',
       'contextmenu': false,
@@ -70,6 +72,10 @@ onMounted(async () => {
     editor.onDidChangeModelContent(() => {
       const code = editor.getValue()
       onChangeCode(code)
+    })
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+
     })
 
     const code = editor.getValue()

@@ -22,7 +22,7 @@ watch(activeTab, (value) => {
 <template>
   <div v-if="manifest" class="my-4 md:my-8 mx-auto max-w-[1164px]">
     <div class="mx-4 md:mx-8 md:pr-[332px] relative">
-      <div>
+      <div class="relative z-10">
         <HeaderInfo
           :active-tab="activeTab"
           @change-tab="activeTab = $event.name"
