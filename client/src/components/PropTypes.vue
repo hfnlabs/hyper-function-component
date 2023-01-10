@@ -139,7 +139,7 @@ function setupMonaco(monaco: MonacoApi) {
             kind: monaco.languages.CompletionItemKind.Snippet,
             insertText: ['model $1 {', '\t$0', '}'].join('\n'),
             insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             detail: 'Model Snippet',
           },
         ],
@@ -219,13 +219,31 @@ function setupMonaco(monaco: MonacoApi) {
   })
 }
 
+const INIT_VALUE = `\
+model Attr {
+
+}
+
+model Event {
+
+}
+
+model Slot {
+
+}
+
+model Method {
+
+}
+`
+
 onMounted(async () => {
   await fetchPropTypes()
   import('../monaco').then(async ({ monaco, initMonaco, createEditor }) => {
     await initMonaco()
     monacoApi.value = monaco
     const editor = createEditor(propEditor.value!, {
-      'value': propTypes.value,
+      'value': propTypes.value || INIT_VALUE,
       'language': 'hfc',
       'theme': 'vs-dark',
       'contextmenu': false,
@@ -264,6 +282,10 @@ onMounted(async () => {
     editor.onDidChangeModelContent(() => {
       const code = editor.getValue()
       onChangeCode(code)
+    })
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+
     })
 
     const code = editor.getValue()
