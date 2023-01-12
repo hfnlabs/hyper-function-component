@@ -26,6 +26,7 @@ specifiers:
   '@milkdown/theme-pack-helper': ^6.5.2
   '@milkdown/utils': ^6.5.2
   '@tailwindcss/typography': ^0.5.7
+  '@twind/cdn': ^1.0.7
   '@types/busboy': ^1.5.0
   '@types/cors': ^2.8.12
   '@types/node': ^18.11.1
@@ -96,6 +97,7 @@ devDependencies:
   '@milkdown/theme-pack-helper': 6.5.2_saft6sjt6ogw4q3fjt5smrk7xi
   '@milkdown/utils': 6.5.2_saft6sjt6ogw4q3fjt5smrk7xi
   '@tailwindcss/typography': 0.5.8_tailwindcss@3.2.4
+  '@twind/cdn': 1.0.7_typescript@4.9.3
   '@types/busboy': 1.5.0
   '@types/cors': 2.8.12
   '@types/node': 18.11.9
@@ -965,6 +967,63 @@ packages:
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
       tailwindcss: 3.2.4_postcss@8.4.20
+    dev: true
+
+  /@twind/cdn/1.0.7_typescript@4.9.3:
+    resolution: {integrity: sha512-O6r0jlu2+NiRpno8FZy7AV/RRRcNRdX818lN3b+iykM/mZ55iewNyMgz3O484E+SxImXH7HOi5uulc1p+nIzVg==}
+    engines: {node: '>=14.15.0'}
+    peerDependencies:
+      typescript: ^4.8.4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@twind/core': 1.1.2_typescript@4.9.3
+      '@twind/preset-autoprefix': 1.0.6_zqgdiu3zj55wyka5hh6xdixv5i
+      '@twind/preset-tailwind': 1.1.3_zqgdiu3zj55wyka5hh6xdixv5i
+      typescript: 4.9.3
+    dev: true
+
+  /@twind/core/1.1.2_typescript@4.9.3:
+    resolution: {integrity: sha512-jaw7eWnwpuTUcrtgfmND0b3rSRVgNH/m+xV5CuxSJ2cuVmlEt3ZucoXAoNwhwocAAnDbxhLGhlfVDfxnagflkA==}
+    engines: {node: '>=14.15.0'}
+    peerDependencies:
+      typescript: ^4.8.4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      csstype: 3.1.1
+      typescript: 4.9.3
+    dev: true
+
+  /@twind/preset-autoprefix/1.0.6_zqgdiu3zj55wyka5hh6xdixv5i:
+    resolution: {integrity: sha512-CSa22PTAa8BocmEHJ0t6hj8I9MLaBUUQIYdeSuryB2rMwZplsTFnKhvxHIPP2gRdgCaABmpMeWOQlbmU8LXd3w==}
+    engines: {node: '>=14.15.0'}
+    peerDependencies:
+      '@twind/core': ^1.1.0
+      typescript: ^4.8.4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@twind/core': 1.1.2_typescript@4.9.3
+      style-vendorizer: 2.2.3
+      typescript: 4.9.3
+    dev: true
+
+  /@twind/preset-tailwind/1.1.3_zqgdiu3zj55wyka5hh6xdixv5i:
+    resolution: {integrity: sha512-0N2IhMcuen7hJkeSzZ0aggbtoG5xCp7iWMkhHv6Hb4bD7cyxFl12Uz1TAkZnLWH6orVHaTWwQzUaL09Xb/1OrQ==}
+    engines: {node: '>=14.15.0'}
+    peerDependencies:
+      '@twind/core': ^1.1.0
+      typescript: ^4.8.4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@twind/core': 1.1.2_typescript@4.9.3
+      typescript: 4.9.3
     dev: true
 
   /@types/busboy/1.5.0:
@@ -4440,6 +4499,10 @@ packages:
     resolution: {integrity: sha512-pv48ybn4iE1O9RLgCAN0iU4Xv7RlBTiit6DKmMiErbs9x1wH6vXBs45tWc0H5wUIF6TLTrKweqkmYF/iraQKNw==}
     dependencies:
       acorn: 8.8.1
+    dev: true
+
+  /style-vendorizer/2.2.3:
+    resolution: {integrity: sha512-/VDRsWvQAgspVy9eATN3z6itKTuyg+jW1q6UoTCQCFRqPDw8bi3E1hXIKnGw5LvXS2AQPuJ7Af4auTLYeBOLEg==}
     dev: true
 
   /stylis/4.1.3:
