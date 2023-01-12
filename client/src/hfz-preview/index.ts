@@ -8,6 +8,7 @@ import { useResizer } from '@/utils'
 
 // @ts-expect-error import hfz after vue inited
 import('@hyper-function/hfz-global')
+import('@twind/cdn').then(({ install }) => install({ disablePreflight: true, darkMode: 'class' }))
 
 const isEmbed = self !== top
 const url = new URL(location.href)
