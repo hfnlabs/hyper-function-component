@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^3.0.0",
-    "hfcpack": "^2.0.10",
+    "hfcpack": "^2.0.15",
     "vite": "^4.0.3"
   }
 }
