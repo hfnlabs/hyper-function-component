@@ -8,7 +8,20 @@ import { useResizer } from '@/utils'
 
 // @ts-expect-error import hfz after vue inited
 import('@hyper-function/hfz-global')
-import('@twind/cdn').then(({ install }) => install({ disablePreflight: true, darkMode: 'class' }))
+
+async function setupTwind() {
+  const { install, defineConfig } = await import('@twind/core')
+  const { default: presetTailwind } = await import('@twind/preset-tailwind')
+
+  install(defineConfig({
+    hash: true,
+    preflight: false,
+    darkMode: 'class',
+    presets: [presetTailwind({ disablePreflight: true })],
+  }), true)
+}
+
+setupTwind()
 
 const isEmbed = self !== top
 const url = new URL(location.href)
