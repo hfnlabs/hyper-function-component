@@ -31,8 +31,9 @@
 ```hfz-view id=w6eqerrcirg
 <template hfz import:awa-btn="dev">
   <div class="p-5">
-    <awa-btn></awa-btn>
+    <awa-btn> </awa-btn>
     <button>bbab</button>
+    <div>asefkjsjfj</div>
   </div>
 </template>
 
@@ -40,8 +41,8 @@
 
 ```hfz-view id=oruef3jj4r
 <div class="flex justify-center items-center mt-4">
-    <h1>CUBE</h1>
-    <img src="/imgs/JD1XOfwO9lM.png" width="50" height="50" alt="" srcset="">
+    <h1 class="text-red-600 bg-sky-500 text-2xl">CUBE</h1>
+    <img class="" src="/imgs/JD1XOfwO9lM.png" width="50" height="50" alt="" srcset="">
 </div>
 
 ```

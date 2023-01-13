@@ -2,4 +2,3 @@ node_modules
 dist
 .hfc
 .DS_Store
-client/public/monacoworkers

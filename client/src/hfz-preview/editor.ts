@@ -7,12 +7,8 @@ const url = new URL(location.href);
   const editor = createEditor(container, {
     value: decodeURIComponent(url.searchParams.get('code') || ''),
     language: 'html',
-    theme: 'vs-dark',
     automaticLayout: true,
     contextmenu: false,
-    bracketPairColorization: {
-      enabled: true,
-    },
     scrollbar: { alwaysConsumeMouseWheel: false },
     // 'bracketPairColorization.enabled': true,
     scrollBeyondLastLine: false,
