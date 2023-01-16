@@ -30,7 +30,7 @@
 
 ```hfz-view id=w6eqerrcirg
 <template hfz import:awa-btn="dev">
-  <div class="p-5">
+  <div class="text-2xl mt-5 p-4 text-4xl text-red-100">
     <awa-btn> </awa-btn>
     <button>bbab</button>
     <div>asefkjsjfj</div>
