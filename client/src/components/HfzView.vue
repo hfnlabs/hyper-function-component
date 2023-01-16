@@ -161,8 +161,8 @@ function changeMinHeight() {
     return
   }
 
-  if (minHeight < 60) {
-    alert('Min Height must be greater than 60')
+  if (minHeight < 80) {
+    alert('Min Height must be greater than 80')
     return
   }
 
@@ -173,7 +173,7 @@ function changeMinHeight() {
 }
 
 function setupSandbox() {
-  let sandboxHeight = code.minHeight || 60
+  let sandboxHeight = code.minHeight || 80
   sandbox.value!.src = previewUrl.toString()
 
   iframeResize(
@@ -199,7 +199,7 @@ function setupSandbox() {
         })
       },
       onResized(res: any) {
-        if (res.height < 60)
+        if (res.height < 80)
           return
         sandboxHeight = parseInt(res.height)
         sandbox.value!.style.height = `${sandboxHeight}px`
@@ -400,7 +400,7 @@ function renderCodeCollapse(pre: HTMLElement) {
 .hfz-view iframe {
   width: 100%;
   border: none;
-  height: 60px;
+  height: 80px;
   background: white;
 }
 </style>
