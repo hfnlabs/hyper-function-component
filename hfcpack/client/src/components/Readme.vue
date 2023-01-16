@@ -54,7 +54,9 @@ function renderHfzView(id: string, container: HTMLDivElement) {
   if (!code.value) {
     code.value = `\
 <template hfz import:${name}="dev">
-  <${name}></${name}>
+  <div class="flex justify-center mt-6">
+    <${name}></${name}>
+  </div>
 </template>
 `
   }

@@ -1,6 +1,5 @@
 import * as Comlink from 'comlink'
-import { type MaybeColorValue, defineConfig, toColorValue } from '@twind/core'
-import presetTailwind from '@twind/preset-tailwind'
+import { type MaybeColorValue, toColorValue } from '@twind/core'
 import type { Intellisense as IntellisenseAPI } from './tw-intellisense'
 
 let intellisense: any
@@ -8,11 +7,9 @@ async function intellisensePromise() {
   if (intellisense)
     return intellisense
 
-  const { createIntellisense } = await import('@twind/intellisense')
-  intellisense = createIntellisense(defineConfig({
-    preflight: false,
-    presets: [presetTailwind({ disablePreflight: true })],
-  }))
+  // @ts-expect-error no types
+  const { createIntellisenseWithTailwind } = await import('twind-intellisense-hfc')
+  intellisense = createIntellisenseWithTailwind()
   return intellisense
 }
 

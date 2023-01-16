@@ -30,6 +30,7 @@ if (!/^\d+(?:\.\d+){2}$/.test(cwdPkg.version)) {
 }
 
 export async function runCli() {
+  console.log(colors.green(`hfcpack v${pkg.version}`))
   const cli = cac('hfcpack')
 
   cli.command('[command]', 'run dev server').action(runServe)

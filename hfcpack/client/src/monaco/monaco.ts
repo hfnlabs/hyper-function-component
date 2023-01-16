@@ -48,6 +48,11 @@ import theme from './theme'
 import twIntellisense from './tw-intellisense'
 import prettier from './prettier'
 
+// disable twind warn
+window.addEventListener('warning', (e) => {
+  e.preventDefault()
+})
+
 installTwind(defineTwindConfig({
   hash: false,
   preflight: false,
@@ -496,6 +501,9 @@ export function createEditor(domElement: HTMLElement, options: monaco.editor.ISt
     showStatusBar: true,
     preview: true,
     previewMode: 'subwordSmart',
+  }
+  options.quickSuggestions = {
+    strings: true,
   }
   options.inlineSuggest = { enabled: true, mode: 'subwordSmart' }
   options.suggestSelection = 'first'
