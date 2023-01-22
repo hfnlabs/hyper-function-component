@@ -21,18 +21,17 @@ export type HyperFunctionComponent<
 };
 
 export type HfcProps = {
-  attrs: { [k: string]: any };
-  events: { [k: string]: (args?: { [k: string]: any }) => Awaitable<any> };
-  slots: {
-    [k: string]: (
-      container: Element,
-      args?: { key?: string; [k: string]: any }
-    ) => void;
-  };
-  // all props
-  _: { [k: string]: any };
+  attrs: Record<string, unknown>;
+  events: Record<string, (args?: Record<string, unknown>) => any>;
+  slots: Record<
+    string,
+    (container: Element, args?: { key?: string; [k: string]: unknown }) => void
+  >;
+  // other props
+  _: Record<string, unknown>;
 };
 
-export type HfcMethods = {
-  [k: string]: (args?: { [k: string]: any }) => Awaitable<any>;
-};
+export type HfcMethods = Record<
+  string,
+  <T = Record<string, unknown>>(args?: Record<string, unknown>) => Awaitable<T>
+>;
