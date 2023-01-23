@@ -1,7 +1,7 @@
 export type HyperFunctionComponent<
   T extends Element = HTMLDivElement,
-  P = HfcProps,
-  M = HfcMethods
+  P extends HfcProps = HfcProps,
+  M extends HfcMethods = HfcMethods
 > = ((
   container: T,
   initProps: P
@@ -20,16 +20,11 @@ export type HyperFunctionComponent<
   names: [string[], string[], string[], string[]];
 };
 
-type RSU = Record<string, unknown>;
-
 export type HfcProps = {
-  attrs: RSU;
-  events: Record<string, (args?: RSU) => unknown>;
-  slots: Record<
-    string,
-    (container: Element, args?: RSU & { key?: string }) => void
-  >;
-  _: RSU; // other props
+  attrs: Record<string, unknown>;
+  events: Record<string, (args?: any) => unknown>;
+  slots: Record<string, (container: Element, args?: any) => void>;
+  _: Record<string, unknown>; // other props
 };
 
-export type HfcMethods = Record<string, (args?: RSU) => RSU | Promise<RSU>>;
+export type HfcMethods = Record<string, (args?: any) => any>;
