@@ -1,5 +1,5 @@
 export type HyperFunctionComponent<
-  T extends Element = HTMLDivElement,
+  T extends Element = Element,
   P extends HfcProps = HfcProps,
   M extends HfcMethods = HfcMethods
 > = ((
