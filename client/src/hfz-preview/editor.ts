@@ -1,4 +1,12 @@
+import { defineConfig as defineTwindConfig, install as installTwind } from '@twind/core'
+import presetTailwind from '@twind/preset-tailwind'
 import { createEditor, initMonaco, monaco } from '../monaco'
+
+installTwind(defineTwindConfig({
+  hash: false,
+  preflight: false,
+  presets: [presetTailwind({ disablePreflight: true })],
+}))
 
 const url = new URL(location.href);
 (async () => {
