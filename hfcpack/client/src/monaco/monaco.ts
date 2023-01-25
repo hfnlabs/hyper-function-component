@@ -30,11 +30,10 @@ import { createOnigScanner, createOnigString, loadWASM } from 'vscode-oniguruma'
 
 import { emmetHTML } from 'emmet-monaco-es'
 
-import { defineConfig as defineTwindConfig, injectGlobal, install as installTwind, tw } from '@twind/core'
-import presetTailwind from '@twind/preset-tailwind'
 import { fromRatio, names as namedColors } from '@ctrl/tinycolor'
 import onigurumaUrl from 'vscode-oniguruma/release/onig.wasm?url'
 import diff from 'fast-diff'
+import { injectGlobal, tw } from '@twind/core'
 import cssGrammarUrl from './grammars/css.tmLanguage.json?url'
 import htmlGrammarUrl from './grammars/html.tmLanguage.json?url'
 import javascriptGrammarUrl from './grammars/javascript.tmLanguage.json?url'
@@ -52,12 +51,6 @@ import prettier from './prettier'
 window.addEventListener('warning', (e) => {
   e.preventDefault()
 })
-
-installTwind(defineTwindConfig({
-  hash: false,
-  preflight: false,
-  presets: [presetTailwind({ disablePreflight: true })],
-}))
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
