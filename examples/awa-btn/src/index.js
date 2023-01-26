@@ -17,7 +17,7 @@ const HFC = function (container, props) {
   div.classList.add('name')
   container.appendChild(div)
   const btn = document.createElement('button')
-  btn.classList.add('btn')
+  btn.classList.add('btn', 'text-2xl')
   btn.innerText = 'AWA BTN!'
   btn.onclick = function () {
     console.log('dispatching click')

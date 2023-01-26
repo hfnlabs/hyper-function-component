@@ -14,7 +14,9 @@ async function setupTwind() {
   const { default: presetTailwind } = await import('@twind/preset-tailwind')
 
   install(defineConfig({
-    hash: false,
+    hash: (className, defaultHash) => {
+      return `twz${defaultHash(className)}`
+    },
     preflight: false,
     darkMode: 'class',
     presets: [presetTailwind({ disablePreflight: true })],
