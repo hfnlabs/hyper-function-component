@@ -6,7 +6,7 @@ specifiers:
   '@fontsource/fira-code': ^4.5.12
   '@fontsource/inter': ^4.5.12
   '@headlessui/vue': ^1.7.4
-  '@hyper-function/hfz-global': ^1.3.14
+  '@hyper-function/hfz-global': ^1.3.15
   '@milkdown/core': ^6.5.2
   '@milkdown/design-system': ^6.5.2
   '@milkdown/exception': ^6.5.4
@@ -85,7 +85,7 @@ devDependencies:
   '@fontsource/fira-code': 4.5.12
   '@fontsource/inter': 4.5.14
   '@headlessui/vue': 1.7.4_vue@3.2.45
-  '@hyper-function/hfz-global': 1.3.14
+  '@hyper-function/hfz-global': 1.3.15
   '@milkdown/core': 6.5.2_@milkdown+prose@6.5.2
   '@milkdown/design-system': 6.5.2_@milkdown+prose@6.5.2
   '@milkdown/exception': 6.5.4
@@ -659,8 +659,8 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
-  /@hyper-function/hfz-global/1.3.14:
-    resolution: {integrity: sha512-MiNSpCHdUZ9NT4qMgZLHMyU+e40TW77RahGKK5yEt3Th2vTc2aIQCyIR6N8gA8oJ18xYQFsSgzQsd8phFrfI8A==}
+  /@hyper-function/hfz-global/1.3.15:
+    resolution: {integrity: sha512-Svb2ty//FAZQ2p6bin5zS1bJCcXwVAR/tPoYgF+RvFle1WlUdbbkSiI6h4i5ro9ud2pn633FrjJkkFFV7JuiAA==}
     dev: true
 
   /@milkdown/core/6.5.2_@milkdown+prose@6.5.2:
