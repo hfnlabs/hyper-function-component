@@ -176,40 +176,42 @@ function setupSandbox() {
   let sandboxHeight = code.minHeight || 80
   sandbox.value!.src = previewUrl.toString()
 
-  iframeResize(
-    {
-      log: false,
-      sizeHeight: false,
-      checkOrigin: false,
-      minHeight: sandboxHeight,
-      heightCalculationMethod: 'grow',
-      onInit() {
-        sendMessageToSandbox({
-          action: 'setDarkMode',
-          data: {
-            darkMode: code.darkMode,
-          },
-        })
+  setTimeout(() => {
+    iframeResize(
+      {
+        log: false,
+        sizeHeight: false,
+        checkOrigin: false,
+        minHeight: sandboxHeight,
+        heightCalculationMethod: 'grow',
+        onInit() {
+          sendMessageToSandbox({
+            action: 'setDarkMode',
+            data: {
+              darkMode: code.darkMode,
+            },
+          })
 
-        sendMessageToSandbox({
-          action: 'render',
-          data: {
-            code: code.value,
-          },
-        })
-      },
-      onResized(res: any) {
-        if (res.height < 80)
-          return
-        sandboxHeight = parseInt(res.height)
-        sandbox.value!.style.height = `${sandboxHeight}px`
-      },
-      onMessage: ({ message }: { message: { action: string; data: any } }) => {
+          sendMessageToSandbox({
+            action: 'render',
+            data: {
+              code: code.value,
+            },
+          })
+        },
+        onResized(res: any) {
+          if (res.height < 80)
+            return
+          sandboxHeight = parseInt(res.height)
+          sandbox.value!.style.height = `${sandboxHeight}px`
+        },
+        onMessage: ({ message }: { message: { action: string; data: any } }) => {
 
+        },
       },
-    },
-    sandbox.value,
-  )
+      sandbox.value,
+    )
+  }, 0)
 }
 
 function setupResizer() {
@@ -355,7 +357,12 @@ function renderCodeCollapse(pre: HTMLElement) {
         class="flex items-center justify-center p-2 h-9 w-9 text-slate-300 hover:text-slate-100"
         title="Change Min Height" @click="changeMinHeight"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" preserveAspectRatio="xMidYMid meet" viewBox="0 0 20 20"><path fill="currentColor" d="m15.003 4.498l.71.735A.75.75 0 0 0 16.79 4.19l-1.82-1.886a1 1 0 0 0-1.44 0L11.71 4.19a.75.75 0 0 0 1.079 1.042l.713-.739V7.25a.75.75 0 0 0 1.5 0V4.498ZM3 5a2 2 0 0 1 2-2h4.25a.75.75 0 0 1 0 1.5H5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h4.25a.75.75 0 0 1 0 1.5H5a2 2 0 0 1-2-2V5Zm12.712 9.767l-.71.735V12.75a.75.75 0 1 0-1.5 0v2.756l-.713-.739a.75.75 0 0 0-1.079 1.042l1.821 1.886a1 1 0 0 0 1.44 0l1.82-1.886a.75.75 0 0 0-1.079-1.042Z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" preserveAspectRatio="xMidYMid meet" viewBox="0 0 20 20">
+          <path
+            fill="currentColor"
+            d="m15.003 4.498l.71.735A.75.75 0 0 0 16.79 4.19l-1.82-1.886a1 1 0 0 0-1.44 0L11.71 4.19a.75.75 0 0 0 1.079 1.042l.713-.739V7.25a.75.75 0 0 0 1.5 0V4.498ZM3 5a2 2 0 0 1 2-2h4.25a.75.75 0 0 1 0 1.5H5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h4.25a.75.75 0 0 1 0 1.5H5a2 2 0 0 1-2-2V5Zm12.712 9.767l-.71.735V12.75a.75.75 0 1 0-1.5 0v2.756l-.713-.739a.75.75 0 0 0-1.079 1.042l1.821 1.886a1 1 0 0 0 1.44 0l1.82-1.886a.75.75 0 0 0-1.079-1.042Z"
+          />
+        </svg>
       </button>
 
       <button
