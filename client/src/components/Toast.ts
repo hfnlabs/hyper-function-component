@@ -10,7 +10,7 @@ function success(msg: string) {
     position: 'right', // `left`, `center` or `right`
     stopOnFocus: true, // Prevents dismissing of toast on hover
     style: {
-      background: '#64ce83',
+      background: '#22c55e',
     },
     onClick() {}, // Callback after click
   }).showToast()

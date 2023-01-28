@@ -15,7 +15,7 @@ import { clipboard } from '@milkdown/plugin-clipboard'
 import { refractor } from 'refractor/lib/common'
 
 import { gfm } from './gfm'
-import { nord } from './theme'
+import theme from './theme'
 import { slash } from './slash'
 import type { HfzViewCode } from './hfz-view'
 import { hfzView } from './hfz-view'
@@ -23,7 +23,7 @@ import { hfzView } from './hfz-view'
 export async function createMilkdownEditor(configFn: CtxHandler, codeMap: HfzViewCode, onHfzViewMount: (id: string, container: HTMLDivElement) => void) {
   gfm
     .configure(heading, {
-      displayHashtag: false,
+      displayHashtag: true,
     })
     .configure(hfzView, {
       codeMap,
@@ -33,7 +33,7 @@ export async function createMilkdownEditor(configFn: CtxHandler, codeMap: HfzVie
   return await Editor.make()
     .config(configFn)
     .use(gfm)
-    .use(nord)
+    .use(theme)
     .use(slash)
     .use(emoji)
     .use(indent)

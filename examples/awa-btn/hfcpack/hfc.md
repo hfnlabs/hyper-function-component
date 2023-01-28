@@ -28,7 +28,7 @@
 
 ![](/imgs/CjR0TtFT5zc.png?_a=center&_w=300)
 
-```hfz-view id=w6eqerrcirg
+```hfz-view id=lz3yrxmjmsa
 <template hfz import:awa-btn="dev">
   <div class="text-2xl mt-5 p-4 text-4xl text-red-100">
     <awa-btn> </awa-btn>
@@ -39,7 +39,7 @@
 
 ```
 
-```hfz-view id=oruef3jj4r
+```hfz-view id=w78wfw5yfzi
 <div class="flex justify-center items-center mt-4">
     <h1 class="text-red-600 bg-sky-500 text-2xl">CUBE</h1>
     <img class="" src="/imgs/JD1XOfwO9lM.png" width="50" height="50" alt="" srcset="">
@@ -62,7 +62,7 @@ function hi() {
 </div>
 ```
 
-```hfz-view id=eev12w4ukw&h=200
+```hfz-view id=i53x9gxpw8m
 <template
   hfz
   :data="{
