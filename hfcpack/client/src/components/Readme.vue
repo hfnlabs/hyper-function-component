@@ -54,7 +54,7 @@ function renderHfzView(id: string, container: HTMLDivElement) {
   if (!code.value) {
     code.value = `\
 <template hfz import:${name}="dev">
-  <div class="flex justify-center mt-6">
+  <div class="flex justify-center py-6">
     <${name}></${name}>
   </div>
 </template>
@@ -93,7 +93,9 @@ function renderHfzView(id: string, container: HTMLDivElement) {
 <style>
 .milkdown {
   min-height: 500px;
+  padding-bottom: 70vh;
 }
+
 .prose li p {
   margin: 0;
 }

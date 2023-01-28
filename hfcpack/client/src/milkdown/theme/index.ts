@@ -15,7 +15,6 @@ import {
 import { useAllPresetRenderer } from '@milkdown/theme-pack-helper'
 
 import { getIcon } from './icon'
-import { darkColor, lightColor } from './nord'
 import { getStyle } from './style'
 
 export const font = {
@@ -43,10 +42,21 @@ export const size = {
   lineWidth: '1px',
 }
 
+export const lightColor = {
+  shadow: '#3b4252',
+  primary: '#475569',
+  secondary: '#64748b',
+  neutral: '#2e3440',
+  solid: '#4c566a',
+  line: '#d8dee9',
+  background: '#eceff4',
+  surface: '#fff',
+}
+
 export const createTheme
-  = (isDarkMode: boolean) => (emotion: Emotion, manager: ThemeManager) => {
+  = (emotion: Emotion, manager: ThemeManager) => {
     const { css } = emotion
-    const colorSet = isDarkMode ? darkColor : lightColor
+    const colorSet = lightColor
 
     manager.set(ThemeColor, (options) => {
       if (!options)
@@ -151,19 +161,4 @@ export const createTheme
     useAllPresetRenderer(manager, emotion)
   }
 
-export const getNord = (isDarkMode = false) =>
-  themeFactory((emotion, manager) => createTheme(isDarkMode)(emotion, manager))
-
-export const nordDark = getNord(true)
-export const nordLight = getNord(false)
-
-let darkMode = false
-if (typeof window !== 'undefined') {
-  darkMode = Boolean(
-    window.matchMedia?.('(prefers-color-scheme: dark)').matches,
-  )
-}
-
-export const nord = getNord(darkMode)
-
-export { color, darkColor, lightColor } from './nord'
+export default themeFactory((emotion, manager) => createTheme(emotion, manager))

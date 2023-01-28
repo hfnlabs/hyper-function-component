@@ -16,8 +16,6 @@ export const gfm: AtomList<AtomPlugin> = AtomList.create([
   hardbreak(),
   blockquote(),
 
-  hfzView(),
-  codeFence(),
   bulletList(),
   orderedList(),
   listItem(),
@@ -33,6 +31,9 @@ export const gfm: AtomList<AtomPlugin> = AtomList.create([
   taskListItem(),
   footnoteReference(),
   footnoteDefinition(),
+
+  hfzView(),
+  codeFence(),
 
   // marks
   codeInline(),
