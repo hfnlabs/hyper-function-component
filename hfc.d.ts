@@ -16,8 +16,10 @@ export type HyperFunctionComponent<
   hfc: string;
   // hfc version
   ver: string;
-  // [AttrNames, EventNames, SlotNames, MethodNames]
+  // [Attr, Event, Slot, Method]
   names: [string[], string[], string[], string[]];
+  // static methods
+  methods?: HfcMethods;
 };
 
 export type HfcProps = {
