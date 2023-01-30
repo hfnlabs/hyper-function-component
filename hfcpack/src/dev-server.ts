@@ -55,7 +55,17 @@ export class DevServer {
     cssVarBuilder: CssVarBuilder
     manifestBuilder: ManifestBuilder
   }) {
-    this.app = createApp()
+    this.app = createApp({
+      onError: (err, event) => {
+        console.error('dev server error:')
+        console.error(err)
+        if (event.node.res.writableEnded || event.node.res.headersSent)
+          return
+
+        event.node.res.writeHead(500, { 'Content-Type': 'application/json' })
+        event.node.res.end(JSON.stringify({ err: err.message }))
+      },
+    })
     this.router = createRouter()
 
     this.app.use(fromNodeMiddleware(cors()))
