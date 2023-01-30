@@ -400,7 +400,7 @@ function renderCodeCollapse(pre: HTMLElement) {
 </template>
 
 <style>
-.hfz-view:hover .preview {
+.hfz-view .preview {
   box-shadow: 0 0 0 1px #ebecf0;
 }
 
