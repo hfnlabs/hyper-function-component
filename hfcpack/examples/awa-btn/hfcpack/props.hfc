@@ -4,7 +4,7 @@ model Attr {
   i: Int
   f: Float
   b: Boolean
-  a: Ts @def("HTMLElement")
+  a: Ts @def("HTMLElement", "sasef")
   u: User
 }
 

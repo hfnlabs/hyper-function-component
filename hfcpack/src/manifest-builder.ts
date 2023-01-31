@@ -15,15 +15,9 @@ export class ManifestBuilder extends EventEmitter {
     const description = process.env.HFC_DESCRIPTION || pkg.description || ''
     const repository = process.env.HFC_REPOSITORY || pkg.repository
     const license = process.env.HFC_LICENSE || pkg.license
-    let keywords = pkg.keywords || []
-    if (process.env.HFC_KEYWORDS)
-      keywords = process.env.HFC_KEYWORDS.split(',')
 
     if (description.length > 256)
       throw new Error('description too lang, max 256 char')
-
-    if (keywords.join('').length > 256)
-      throw new Error('keywords too lang, max total 256 char')
 
     const manifest: HfcManifest = {
       name: this.config.name,
@@ -31,7 +25,6 @@ export class ManifestBuilder extends EventEmitter {
       banner,
       homepage,
       description,
-      keywords,
       license,
       repository,
       deps: this.config.deps,

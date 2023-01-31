@@ -331,7 +331,7 @@ track(
           })
       },
       provideColorPresentations(model, colorInfo) {
-        const className = model.getValueInRange(colorInfo.range)
+        const className = model.getValueInRange(colorInfo.range)!
 
         const match = className.match(editabelColorRe)
 
@@ -368,24 +368,6 @@ track(
     }),
   )
 }
-
-monaco.languages.register({ id: 'hfc' })
-
-track(
-  monaco.languages.setLanguageConfiguration('hfc', {
-    comments: {
-      lineComment: '//',
-    },
-    brackets: [
-      ['{', '}'],
-      ['[', ']'],
-      ['(', ')'],
-    ],
-    folding: {
-      offSide: true,
-    },
-  }),
-)
 
 let provider: SimpleLanguageInfoProvider
 let inited = false
