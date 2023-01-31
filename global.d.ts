@@ -8,7 +8,6 @@ declare global {
     banner: string;
     homepage: string;
     description: string;
-    keywords: string[];
     license: string;
     repository: string;
     deps: ResolvedConfig["deps"];

@@ -13,7 +13,7 @@ console.log(ReactDom)
 const HFC = function (container, props) {
   console.log(props)
   const div = document.createElement('div')
-  div.innerHTML = 'awa-btn'
+  div.innerHTML = 'awa-btn!'
   div.classList.add('name')
   container.appendChild(div)
   const btn = document.createElement('button')

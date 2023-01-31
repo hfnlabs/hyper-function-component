@@ -107,6 +107,36 @@ const suggestions = computed(() => {
       insertText: 'Ts',
       detail: 'Type Ts',
     },
+    {
+      label: 'enum',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'enum',
+      detail: 'enum',
+    },
+    {
+      label: 'def',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'def',
+      detail: 'def',
+    },
+    {
+      label: 'default',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'default',
+      detail: 'default',
+    },
+    {
+      label: 'static',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'static',
+      detail: 'static',
+    },
+    {
+      label: 'async',
+      kind: monacoApi.value!.languages.CompletionItemKind.Snippet,
+      insertText: 'async',
+      detail: 'async',
+    },
   ]
 
   Object.keys(typePos.value).forEach((key) => {
@@ -122,6 +152,28 @@ const suggestions = computed(() => {
 })
 
 function setupMonaco(monaco: MonacoApi) {
+  monaco.languages.register({ id: 'hfc' })
+
+  monaco.languages.setLanguageConfiguration('hfc', {
+    comments: {
+      lineComment: '//',
+    },
+    brackets: [
+      ['{', '}'],
+      ['[', ']'],
+      ['(', ')'],
+    ],
+    autoClosingPairs: [
+      { open: '{', close: '}' },
+      { open: '[', close: ']' },
+      { open: '(', close: ')' },
+      { open: '"', close: '"', notIn: ['string'] },
+    ],
+    folding: {
+      offSide: true,
+    },
+  })
+
   monaco.languages.registerCompletionItemProvider('hfc', {
     // @ts-expect-error ts(2322)
     provideCompletionItems(model, position, context, token) {
