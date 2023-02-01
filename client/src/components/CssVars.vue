@@ -19,13 +19,7 @@ const onChangeCode = useDebounceFn(async (code: string) => {
   }
 })
 
-function setupMonaco(monaco: MonacoApi) {}
-
-const INIT_VALUE = `\
-:root {
-  
-}
-`
+function setupMonaco(monaco: MonacoApi) { }
 
 onMounted(async () => {
   await fetchCssVars()
@@ -33,7 +27,7 @@ onMounted(async () => {
     await initMonaco()
     monacoApi.value = monaco
     const editor = createEditor(cssEditor.value!, {
-      'value': cssVars.value || INIT_VALUE,
+      'value': cssVars.value,
       'language': 'css',
       'theme': 'vs-dark',
       'contextmenu': false,

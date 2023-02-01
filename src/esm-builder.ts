@@ -144,7 +144,7 @@ export class EsmBuilder extends EventEmitter {
     }
 
     const js = jsChunk.code
-    const css = cssAsset ? cssAsset.source : ''
+    const css = cssAsset ? cssAsset.source || '/* no style */' : '/* no style */'
 
     await Promise.all([
       fs.writeFile(this.distHfcJsPath, js),
