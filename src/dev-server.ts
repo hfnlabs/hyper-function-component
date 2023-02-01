@@ -349,6 +349,11 @@ export class DevServer {
     const clientDist = path.resolve(__dirname, '..', 'dist', 'client')
     if (fs.existsSync(clientDist))
       this.router.use('**', fromNodeMiddleware(sirv(clientDist, { dev: true, etag: true })))
+
+    this.router.use('**', eventHandler((event) => {
+      event.node.res.statusCode = 404
+      return { err: 'NOT_FOUND' }
+    }))
   }
 
   sendMessage(msg: any) {
