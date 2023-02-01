@@ -271,31 +271,13 @@ function setupMonaco(monaco: MonacoApi) {
   })
 }
 
-const INIT_VALUE = `\
-model Attr {
-
-}
-
-model Event {
-
-}
-
-model Slot {
-
-}
-
-model Method {
-
-}
-`
-
 onMounted(async () => {
   await fetchPropTypes()
   import('../monaco').then(async ({ monaco, initMonaco, createEditor }) => {
     await initMonaco()
     monacoApi.value = monaco
     const editor = createEditor(propEditor.value!, {
-      'value': propTypes.value || INIT_VALUE,
+      'value': propTypes.value,
       'language': 'hfc',
       'theme': 'vs-dark',
       'contextmenu': false,

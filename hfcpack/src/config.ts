@@ -1,6 +1,7 @@
 import path from 'path'
 import { pathToFileURL } from 'url'
-import fs from 'fs/promises'
+import fs from 'fs'
+import fsp from 'fs/promises'
 import type { BuildOptions, UserConfig } from 'vite'
 import { ensureFileSync, readJson } from './utils'
 
@@ -72,6 +73,24 @@ const SHARED_NPM_IMPORTS = [
   'echarts',
 ]
 
+const PROP_TYPES_INIT_VALUE = `\
+model Attr {
+
+}
+
+model Event {
+
+}
+
+model Slot {
+
+}
+
+model Method {
+
+}
+`
+
 export async function resolveConfig(
   context: string,
   command: 'serve' | 'build',
@@ -97,7 +116,7 @@ export async function resolveConfig(
   const outputPath = path.resolve(context, '.hfc', command)
 
   if (command === 'build')
-    await fs.rm(outputPath, { recursive: true, force: true })
+    await fsp.rm(outputPath, { recursive: true, force: true })
 
   const pkgOutputPath = path.resolve(outputPath, 'pkg')
   const hfmOutputPath = path.resolve(outputPath, 'hfm')
@@ -113,9 +132,15 @@ export async function resolveConfig(
 
   await Promise.all(
     [outputPath, pkgOutputPath, hfmOutputPath, hfcpackPath, hfcDocImgPath].map(p =>
-      fs.mkdir(p, { recursive: true }),
+      fsp.mkdir(p, { recursive: true }),
     ),
   )
+
+  if (!fs.existsSync(cssVarsPath) || fs.statSync(cssVarsPath).size === 0)
+    fs.writeFileSync(cssVarsPath, ':root {\n  \n}\n')
+
+  if (!fs.existsSync(propTypesPath) || fs.statSync(propTypesPath).size === 0)
+    fs.writeFileSync(propTypesPath, PROP_TYPES_INIT_VALUE)
 
   ;[cssVarsPath, propTypesPath].forEach(p => ensureFileSync(p))
 
