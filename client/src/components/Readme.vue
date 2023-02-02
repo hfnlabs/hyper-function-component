@@ -96,6 +96,10 @@ function renderHfzView(id: string, container: HTMLDivElement) {
   padding-bottom: 70vh;
 }
 
+.prose h1 {
+  font-size: 1.9em;
+}
+
 .prose li p {
   margin: 0;
 }
