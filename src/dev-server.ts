@@ -69,6 +69,8 @@ export class DevServer {
     this.router = createRouter()
 
     this.app.use(fromNodeMiddleware(cors()))
+
+    this.setupRoute()
     this.app.use(this.router)
 
     this.builders.hfmBuilder.on('build-complete', async () => {
@@ -80,7 +82,7 @@ export class DevServer {
     })
   }
 
-  async run() {
+  private setupRoute() {
     this.router.get('/api/events', eventHandler((event) => {
       return callNodeListener((req, res, _next) => {
         const query = getQuery(event)
@@ -102,6 +104,9 @@ export class DevServer {
         this.buildEventServerResponses.push(res)
 
         event.node.res.on('close', () => {
+          if (!event.node.res.headersSent)
+            res.end()
+
           if (!this.buildEventServerResponses.length)
             return
           const idx = this.buildEventServerResponses.indexOf(res)
@@ -346,13 +351,13 @@ export class DevServer {
       staticMiddleware(this.config.hfmOutputPath, '/hfm'),
     )
 
-    const clientDist = path.resolve(__dirname, '..', 'dist', 'client')
-    if (fs.existsSync(clientDist))
-      this.router.use('**', fromNodeMiddleware(sirv(clientDist, { dev: true, etag: true })))
-
-    this.router.use('**', eventHandler((event) => {
-      event.node.res.statusCode = 404
-      return { err: 'NOT_FOUND' }
+    const clientStaticHandler = sirv(path.resolve(__dirname, '..', 'dist', 'client'), { dev: true, etag: true })
+    this.router.use('**', fromNodeMiddleware((_req, res, _next) => {
+      clientStaticHandler(_req, res, () => {
+        res.statusCode = 404
+        res.setHeader('content-type', 'application/json')
+        res.end(JSON.stringify({ err: 'NOT_FOUND' }))
+      })
     }))
   }
 

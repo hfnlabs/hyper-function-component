@@ -79,6 +79,5 @@ export class Service extends EventEmitter {
       propsBuilder,
       cssVarBuilder,
     })
-    await this.devServer.run()
   }
 }
