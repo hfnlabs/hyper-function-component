@@ -2,11 +2,9 @@ export type HyperFunctionComponent<
   T extends Element = Element,
   P extends HfcProps = HfcProps,
   M extends HfcMethods = HfcMethods
-> = ((
-  container: T,
-  initProps: P
-) => {
+> = ((initProps: P) => {
   methods?: M;
+  connected: (container: T) => void;
   changed: (props: P) => void;
   disconnected: () => void;
 }) & {
