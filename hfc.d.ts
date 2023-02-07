@@ -4,27 +4,27 @@ export type HyperFunctionComponent<
   M extends HfcMethods = HfcMethods
 > = ((initProps: P) => {
   methods?: M;
-  connected: (container: T) => void;
-  changed: (props: P) => void;
-  disconnected: () => void;
+  connected(container: T): void;
+  changed(props: P, partial?: boolean): void;
+  disconnected(): void;
 }) & {
-  // tag name
-  tag: string;
-  // hfc name
-  hfc: string;
-  // hfc version
-  ver: string;
-  // [Attr, Event, Slot, Method]
-  names: [string[], string[], string[], string[]];
-  // static methods
-  methods?: HfcMethods;
+  tag: string /* tag name */;
+  hfc: string /* hfc name */;
+  ver: string /* hfc version */;
+  names: [
+    string[],
+    string[],
+    string[],
+    string[]
+  ] /* [attr, event, slot, method] */;
+  methods?: HfcMethods /* static methods */;
 };
 
 export type HfcProps = {
-  attrs: Record<string, unknown>;
-  events: Record<string, (args?: any) => unknown>;
-  slots: Record<string, (container: Element, args?: any) => void>;
-  _: Record<string, unknown>; // other props
+  attrs?: Record<string, unknown>;
+  events?: Record<string, (args?: any) => unknown>;
+  slots?: Record<string, (container: Element, args?: any) => void>;
+  _?: Record<string, unknown>; // other props
 };
 
 export type HfcMethods = Record<string, (args?: any) => any>;
