@@ -1,6 +1,6 @@
 {
   "name": "hyper-function-component",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "",
   "main": "dist/index.js",
   "types": "index.d.ts",
@@ -9,5 +9,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
