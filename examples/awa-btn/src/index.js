@@ -34,10 +34,14 @@ const HFC = function (initProps) {
       container.appendChild(btn)
       container.appendChild(img)
 
+      const defaultSlot = {
+        args: {},
+        target: document.createElement('div'),
+      }
+
       if (initProps.slots.default) {
-        const div = document.createElement('div')
-        container.appendChild(div)
-        initProps.slots.default(div)
+        container.appendChild(defaultSlot.target)
+        initProps.slots.default(defaultSlot)
       }
     },
     changed(props) {

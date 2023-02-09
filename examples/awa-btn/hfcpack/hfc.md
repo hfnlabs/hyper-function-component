@@ -31,7 +31,7 @@
 ```hfz-view id=lz3yrxmjmsa
 <template hfz import:awa-btn="dev">
   <div class="text-2xl mt-5 p-4 text-4xl text-red-100">
-    <awa-btn> </awa-btn>
+    <awa-btn> default slot </awa-btn>
     <button>bbab</button>
     <div>asefkjsjfj</div>
   </div>
