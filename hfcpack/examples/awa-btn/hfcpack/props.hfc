@@ -18,6 +18,7 @@ model Slot {
   header: {
     title: String
   }
+  default: {}
 }
 
 model Method {
