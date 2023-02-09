@@ -25,12 +25,14 @@ type RSU = Record<string, unknown>;
 
 export type HfcEventCallback<T = RSU> = (args?: T) => unknown;
 
-export type HfcSlotCallback<E = Element, T = RSU> = (slot: {
+export type HfcSlotOptions<E = Element, T = RSU> = {
   args?: T;
   target: E;
   changed?: () => void;
   removed?: () => void;
-}) => void;
+};
+
+export type HfcSlotCallback<T = HfcSlotOptions> = (slot: T) => void;
 
 export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
 
