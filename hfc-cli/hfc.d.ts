@@ -1,7 +1,12 @@
-export type HyperFunctionComponent = ((initProps: HfcProps) => {
-  methods?: HfcMethods;
-  connected(container: Element): void;
-  changed(props: HfcProps, partial?: boolean): void;
+export type HyperFunctionComponent<
+  E extends Element = Element,
+  P = HfcProps,
+  MI = HfcMethods,
+  MS = HfcMethods
+> = ((initProps: P) => {
+  methods?: MI;
+  connected(container: E): void;
+  changed(props: P, partial?: boolean): void;
   disconnected(): void;
 }) & {
   tag: string /* tag name */;
@@ -13,24 +18,38 @@ export type HyperFunctionComponent = ((initProps: HfcProps) => {
     string[],
     string[]
   ] /* [attr, event, slot, method] */;
-  methods?: HfcMethods /* static methods */;
+  methods?: MS /* static methods */;
 };
 
 type RSU = Record<string, unknown>;
 
-export type HfcProps = {
-  attrs?: RSU;
-  events?: Record<string, (args?: RSU) => unknown>;
-  slots?: Record<
-    string,
-    (slot: {
-      args?: RSU;
-      target: Element;
-      changed?: () => void;
-      removed?: () => void;
-    }) => void
-  >;
-  _?: RSU /* other props */;
+export type HfcEventCallback<T = RSU> = (args?: T) => unknown;
+
+export type HfcSlotCallback<E = Element, T = RSU> = (slot: {
+  args?: T;
+  target: E;
+  changed?: () => void;
+  removed?: () => void;
+}) => void;
+
+export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
+
+export type HfcProps<
+  A = RSU,
+  E = {
+    [k: string]: HfcEventCallback;
+  },
+  S = {
+    [k: string]: HfcSlotCallback;
+  },
+  O = RSU
+> = {
+  attrs?: A;
+  events?: E;
+  slots?: S;
+  _?: O /* other props */;
 };
 
-export type HfcMethods = Record<string, (args?: RSU) => any>;
+export type HfcMethods = {
+  [k: string]: HfcMethod;
+};
