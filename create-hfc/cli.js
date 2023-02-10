@@ -6,11 +6,12 @@ const chalk = require("chalk");
 const inquirer = require("inquirer");
 const minimist = require("minimist");
 const updateNotifier = require("update-notifier");
+const JSON5 = require('json5');
 
 const pkg = require("./package.json");
 require("please-upgrade-node")(pkg);
 
-const { templates } = require("./templates/templates.json");
+const { templates } = require('./templates');
 
 function updateCheck() {
   const notifier = updateNotifier({ pkg });
@@ -91,7 +92,7 @@ async function run() {
   console.log("");
   console.log(
     "Link: " +
-      chalk.magenta("https://hyper-function.com/hfc/create-hfc/getting-started")
+      chalk.magenta("https://hyper-function-component.com/create-hfc/getting-started")
   );
 }
 

@@ -1,7 +1,9 @@
 import "./index.css";
 
-const HFC = (container, initProps) => {
-  container.innerHTML = `
+const HFC = (initProps) => {
+  return {
+    connected(container) {
+      container.innerHTML = `
       <h1>
         <div>THIS COMPONENT</div>
         <div>CAN BE USED IN</div>
@@ -15,8 +17,10 @@ const HFC = (container, initProps) => {
           </ul>
         </div>
       </h1>`;
-
-  return { changed(props) {}, disconnected() {} };
+    },
+    changed(props) {},
+    disconnected() {},
+  };
 };
 
 HFC.tag = "div";

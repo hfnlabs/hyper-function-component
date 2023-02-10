@@ -1,12 +1,11 @@
-import type {
-  HyperFunctionComponent,
-  HfcProps,
-} from "hyper-function-component";
+import type { HyperFunctionComponent } from "hyper-function-component";
 
 import "./index.css";
 
-const HFC: HyperFunctionComponent = (container, initProps) => {
-  container.innerHTML = `
+const HFC: HyperFunctionComponent = (initProps) => {
+  return {
+    connected(container) {
+      container.innerHTML = `
       <h1>
         <div>THIS COMPONENT</div>
         <div>CAN BE USED IN</div>
@@ -20,8 +19,10 @@ const HFC: HyperFunctionComponent = (container, initProps) => {
           </ul>
         </div>
       </h1>`;
-
-  return { changed(props) {}, disconnected() {} };
+    },
+    changed(props, partial) {},
+    disconnected() {},
+  };
 };
 
 HFC.tag = "div";
