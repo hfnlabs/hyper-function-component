@@ -5,7 +5,6 @@
   "description": "awesome hfc",
   "homepage": "",
   "repository": "",
-  "keywords": [],
   "type": "module",
   "scripts": {
     "start": "hfcpack",
@@ -15,10 +14,10 @@
   },
   "dependencies": {
     "svelte": "^3",
-    "svelte-to-hfc": "^1.1.2"
+    "svelte-to-hfc": "^1.2.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^1.0.7",
-    "hfcpack": "^2.0.18"
+    "@sveltejs/vite-plugin-svelte": "^2.0.2",
+    "hfcpack": "^2.1.2"
   }
 }

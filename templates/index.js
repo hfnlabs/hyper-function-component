@@ -1,4 +1,4 @@
-{
+module.exports = {
   "templates": [
     {
       "title": "Vanilla - TypeScript",
@@ -16,22 +16,22 @@
       "title": "React",
       "folder": "react"
     },
-    {
-      "title": "Preact - TypeScript",
-      "folder": "preact-ts"
-    },
-    {
-      "title": "Preact",
-      "folder": "preact"
-    },
-    {
-      "title": "Vue - TypeScript",
-      "folder": "vue-ts"
-    },
-    {
-      "title": "Vue",
-      "folder": "vue"
-    },
+    // {
+    //   "title": "Preact - TypeScript",
+    //   "folder": "preact-ts"
+    // },
+    // {
+    //   "title": "Preact",
+    //   "folder": "preact"
+    // },
+    // {
+    //   "title": "Vue - TypeScript",
+    //   "folder": "vue-ts"
+    // },
+    // {
+    //   "title": "Vue",
+    //   "folder": "vue"
+    // },
     {
       "title": "Svelte",
       "folder": "svelte"

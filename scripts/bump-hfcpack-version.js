@@ -1,7 +1,7 @@
 const { execSync } = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
-const { templates } = require("../templates/templates.json");
+const { templates } = require('../templates');
 
 const version = process.argv[2];
 
