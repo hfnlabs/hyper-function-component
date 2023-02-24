@@ -5,3 +5,11 @@
 .name {
   color: var(--awa-bg);
 }
+
+[hfc="HFC_NAME"] {
+  background-color: black;
+}
+
+[hfc="HFC_NAME"] a {
+  background-color: black;
+}
