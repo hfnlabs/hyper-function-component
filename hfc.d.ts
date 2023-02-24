@@ -34,15 +34,13 @@ export type HfcSlotOptions<E = Element, T = RSU> = {
 
 export type HfcSlotCallback<T = HfcSlotOptions> = (slot: T) => void;
 
-export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
-
 export type HfcProps<
   A = RSU,
   E = {
-    [k: string]: HfcEventCallback;
+    [k: string]: HfcEventCallback | undefined;
   },
   S = {
-    [k: string]: HfcSlotCallback;
+    [k: string]: HfcSlotCallback | undefined;
   },
   O = RSU
 > = {
@@ -51,6 +49,8 @@ export type HfcProps<
   slots?: S;
   _?: O /* other props */;
 };
+
+export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
 
 export type HfcMethods = {
   [k: string]: HfcMethod;
