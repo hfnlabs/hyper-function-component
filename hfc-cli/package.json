@@ -1,6 +1,6 @@
 {
   "name": "hyper-function-component",
-  "version": "2.3.4",
+  "version": "2.3.6",
   "description": "",
   "main": "dist/index.js",
   "types": "index.d.ts",

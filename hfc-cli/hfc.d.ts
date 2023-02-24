@@ -6,7 +6,7 @@ export type HyperFunctionComponent<
 > = ((initProps: P) => {
   methods?: MI;
   connected(container: E): void;
-  changed(props: P, partial?: boolean): void;
+  updated(props: P, partial?: boolean): void;
   disconnected(): void;
 }) & {
   tag: string /* tag name */;
@@ -28,21 +28,19 @@ export type HfcEventCallback<T = RSU> = (args?: T) => unknown;
 export type HfcSlotOptions<E = Element, T = RSU> = {
   args?: T;
   target: E;
-  changed?: () => void;
+  updated?: () => void;
   removed?: () => void;
 };
 
 export type HfcSlotCallback<T = HfcSlotOptions> = (slot: T) => void;
 
-export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
-
 export type HfcProps<
   A = RSU,
   E = {
-    [k: string]: HfcEventCallback;
+    [k: string]: HfcEventCallback | undefined;
   },
   S = {
-    [k: string]: HfcSlotCallback;
+    [k: string]: HfcSlotCallback | undefined;
   },
   O = RSU
 > = {
@@ -51,6 +49,8 @@ export type HfcProps<
   slots?: S;
   _?: O /* other props */;
 };
+
+export type HfcMethod<T = RSU, P = RSU> = (args?: T) => void | P;
 
 export type HfcMethods = {
   [k: string]: HfcMethod;
