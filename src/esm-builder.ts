@@ -77,13 +77,13 @@ export class EsmBuilder extends EventEmitter {
 
     const env = { ...this.config.env, ...process.env }
     for (const key in env) {
-      if (key.startsWith('HFC_PUBLIC_'))
+      if (key.startsWith('HFC_'))
         hfcEnv[key] = env[key]
     }
 
-    hfcEnv['process.env.HFC_PROP_NAMES'] = process.env.HFC_PROP_NAMES
-    hfcEnv['process.env.HFC_NAME'] = JSON.stringify(this.config.name)
-    hfcEnv['process.env.HFC_VERSION'] = JSON.stringify(this.config.version)
+    hfcEnv['import.meta.env.HFC_NAME'] = JSON.stringify(this.config.name)
+    hfcEnv['import.meta.env.HFC_VERSION'] = JSON.stringify(this.config.version)
+    hfcEnv['import.meta.env.HFC_PROP_NAMES'] = process.env.HFC_PROP_NAMES
 
     this.viteConfig.define = hfcEnv
     this.viteConfig.build!.watch = { skipWrite: true }

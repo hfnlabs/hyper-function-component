@@ -44,7 +44,7 @@ const HFC = function (initProps) {
         initProps.slots.default(defaultSlot)
       }
     },
-    changed(props) {
+    updated(props) {
       console.log(props)
     },
     disconnected() {},
@@ -52,8 +52,8 @@ const HFC = function (initProps) {
 }
 
 HFC.tag = 'div'
-HFC.hfc = process.env.HFC_NAME
-HFC.ver = process.env.HFC_VERSION
-HFC.names = process.env.HFC_PROP_NAMES
+HFC.hfc = import.meta.env.HFC_NAME
+HFC.ver = import.meta.env.HFC_VERSION
+HFC.names = import.meta.env.HFC_PROP_NAMES
 
 export default HFC
