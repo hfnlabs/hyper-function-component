@@ -1,6 +1,6 @@
 {
   "name": "hfcpack",
-  "version": "2.1.1",
+  "version": "2.1.4",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,8 @@
   },
   "files": [
     "dist/**/*",
-    "cli.js"
+    "cli.js",
+    "client.d.ts"
   ],
   "scripts": {
     "clean": "rm -rf dist",
@@ -39,7 +40,7 @@
     "@fontsource/fira-code": "^4.5.12",
     "@fontsource/inter": "^4.5.12",
     "@headlessui/vue": "^1.7.4",
-    "@hyper-function/hfz-global": "^1.4.1",
+    "@hyper-function/hfz-global": "^1.4.3",
     "@milkdown/core": "^6.5.2",
     "@milkdown/design-system": "^6.5.2",
     "@milkdown/exception": "^6.5.4",
