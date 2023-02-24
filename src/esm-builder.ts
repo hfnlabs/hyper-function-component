@@ -144,7 +144,12 @@ export class EsmBuilder extends EventEmitter {
     }
 
     const js = jsChunk.code
-    const css = cssAsset ? cssAsset.source || '/* no style */' : '/* no style */'
+    let css = '/* no style */'
+    if (cssAsset && cssAsset.source)
+      css = cssAsset.source as string
+
+    if (css.includes('[hfc="HFC_NAME"]'))
+      css = css.replace(/\[hfc="HFC_NAME"\]/g, `[hfc="${this.config.name}"]`)
 
     await Promise.all([
       fs.writeFile(this.distHfcJsPath, js),
