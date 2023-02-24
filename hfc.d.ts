@@ -6,7 +6,7 @@ export type HyperFunctionComponent<
 > = ((initProps: P) => {
   methods?: MI;
   connected(container: E): void;
-  changed(props: P, partial?: boolean): void;
+  updated(props: P, partial?: boolean): void;
   disconnected(): void;
 }) & {
   tag: string /* tag name */;
@@ -28,7 +28,7 @@ export type HfcEventCallback<T = RSU> = (args?: T) => unknown;
 export type HfcSlotOptions<E = Element, T = RSU> = {
   args?: T;
   target: E;
-  changed?: () => void;
+  updated?: () => void;
   removed?: () => void;
 };
 
