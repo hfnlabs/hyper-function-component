@@ -144,8 +144,6 @@ export class HfmBuilder extends EventEmitter {
 (function () {
   const currentUrl = document.currentScript.src;
 
-  $HFC_LOAD_CSS(currentUrl.replace("hfm.js", "hfm.css"));
-
   const deps = ${JSON.stringify(
     this.sharedDeps.map(dep => ({
         name: dep.name,
@@ -157,14 +155,15 @@ export class HfmBuilder extends EventEmitter {
 
   const hfmBaseUrl = currentUrl.split("hfm/")[0];
   function init() {
-    return Promise.all(
-      deps.map((dep) => {
-        if (shared[dep.name]) return;
-        return $HFC_LOAD_JS(
-          hfmBaseUrl + "hfm/share/" + dep.name + "@" + dep.ver + ".js"
-        );
-      })
-    ).then(initHfc);
+    const links = deps.map((dep) => {
+      if (shared[dep.name]) return;
+      return $HFC_LOAD_JS(
+        hfmBaseUrl + "hfm/share/" + dep.name + "@" + dep.ver + ".js"
+      );
+    })
+
+    links.push($HFC_LOAD_CSS(currentUrl.replace("hfm.js", "hfm.css")));
+    return Promise.all(links).then(initHfc);
   }
 
   window.$HFC_ITEMS = window.$HFC_ITEMS || {};
