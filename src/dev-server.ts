@@ -2,7 +2,7 @@ import path, { dirname } from 'path'
 import type { ServerResponse } from 'http'
 import { createServer } from 'http'
 import { fileURLToPath } from 'url'
-import fs from 'fs'
+import fs, { readFileSync } from 'fs'
 import cors from 'cors'
 import sirv from 'sirv'
 import colors from 'picocolors'
@@ -228,12 +228,21 @@ export class DevServer {
       wirteJsonSync(this.config.pkgJsonPath, pkg, 2)
     }
 
+    const updateHfcNameInDoc = (name: string) => {
+      const docPath = path.join(this.config.hfcpackPath, 'hfc.md')
+      const doc = readFileSync(docPath, 'utf-8')
+
+      const newDoc = doc.split(this.config.name).join(name)
+      fs.writeFileSync(docPath, newDoc)
+    }
+
     this.router.post('/api/manifest', eventHandler(async (event) => {
       const { key, value } = await readBody<{ key: string; value: any }>(event)
 
       if (key === 'name') {
-        this.config.name = value
         updatePackageJson({ name: value })
+        updateHfcNameInDoc(value)
+        this.config.name = value
 
         await this.builders.manifestBuilder.build()
         await this.builders.esmBuilder.build()
