@@ -13,12 +13,10 @@ export const useManifest = createGlobalState(
 
     async function updateManifest(key: string, value: any) {
       const res = await fetch('/api/manifest', { method: 'POST', body: JSON.stringify({ key, value }) }).then(res => res.json())
-      if (res.err === 'OK') {
-        Toast.success(`update ${key} success`)
-        fetchManifest()
-      }
+      if (res.err === 'OK')
+        location.reload()
 
-      else { Toast.error(`update ${key} failed`) }
+      else Toast.error(`update ${key} failed`)
     }
 
     fetchManifest()

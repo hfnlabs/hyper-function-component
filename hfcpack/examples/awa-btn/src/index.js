@@ -20,7 +20,7 @@ const HFC = function (initProps) {
       div.classList.add('name')
       container.appendChild(div)
       const btn = document.createElement('button')
-      btn.classList.add('btn', 'text-2xl')
+      btn.classList.add('btn', 'text-2xl', `${import.meta.env.HFC_NAME}-shadow`)
       btn.innerText = 'AWA BTN!'
       btn.onclick = function () {
         console.log('dispatching click')

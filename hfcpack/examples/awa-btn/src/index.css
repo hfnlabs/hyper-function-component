@@ -6,10 +6,10 @@
   color: var(--awa-bg);
 }
 
-[hfc="HFC_NAME"] {
-  background-color: black;
+[hfc="__HFC_NAME__"] {
+  background-color: seashell;
 }
 
-[hfc="HFC_NAME"] a {
-  background-color: black;
+.__HFC_NAME__-shadow {
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 }
